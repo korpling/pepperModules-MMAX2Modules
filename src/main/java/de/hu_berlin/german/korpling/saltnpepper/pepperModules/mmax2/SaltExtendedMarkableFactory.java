@@ -30,16 +30,16 @@ public class SaltExtendedMarkableFactory extends MarkableFactory{
 		super(scheme,documentBuilder);
 	}
 	
-	public ArrayList<SaltExtendedMarkable> getSaltExtendedMarkables(String documentId, File corpusPath) throws IOException, SAXException, ParserConfigurationException, MMAX2WrapperException {
+	public ArrayList<SaltExtendedMarkable> getSaltExtendedMarkables(String documentId, File markablesPath, File saltInfoPath) throws IOException, SAXException, ParserConfigurationException, MMAX2WrapperException {
 		if(this.documentBuilder == null)
 			throw new SaltExtendedMMAX2WrapperException("To use function 'getCorpus' a DocumentBuilder needs to be provided at instantiation");
 		
 		Hashtable<String,Markable> correspondance = new Hashtable<String,Markable>();	
-		for(Markable markable : super.getMarkables(documentId,corpusPath)){
+		for(Markable markable : super.getMarkables(documentId,markablesPath)){
 			correspondance.put(markable.getId(), markable);			
 		}
 		
-		File saltInfoFile = new File(corpusPath.toString()+ File.separator + SaltExtendedMmax2Infos.SALT_INFO_FOLDER + File.separator+ documentId + SaltExtendedMmax2Infos.SALT_INFO_FILE_ENDING);	
+		File saltInfoFile = new File(saltInfoPath+ File.separator + SaltExtendedMmax2Infos.SALT_INFO_FOLDER + File.separator+ documentId + SaltExtendedMmax2Infos.SALT_INFO_FILE_ENDING);	
 		
 		ArrayList<SaltExtendedMarkable> results = new ArrayList<SaltExtendedMarkable>();
 		if(saltInfoFile.exists()){

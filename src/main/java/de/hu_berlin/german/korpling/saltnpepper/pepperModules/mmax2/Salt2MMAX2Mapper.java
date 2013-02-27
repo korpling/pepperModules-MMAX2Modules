@@ -260,7 +260,7 @@ public class Salt2MMAX2Mapper
 				span = getSpan(span);
 				if(span == null){
 					if (this.getLogService()!= null)
-						this.logService.log(this.logService.LOG_WARNING, "Document '"+sDocument.getSName()+"' removing a markable '"+markable.getLevelName()+"' with SName '"+markable.getSName()+"' because its span '"+markable.getSpan()+"' references an unknown node, Salt graph is maybe incomplete...");
+						this.logService.log(LogService.LOG_WARNING, "Document '"+sDocument.getSName()+"' removing a markable '"+markable.getLevelName()+"' with SName '"+markable.getSName()+"' because its span '"+markable.getSpan()+"' references an unknown node, Salt graph is maybe incomplete...");
 					document.removeMarkable(markable);
 					continue;
 				}
@@ -269,7 +269,7 @@ public class Salt2MMAX2Mapper
 			}
 			if(span.equals("")){
 				if (this.getLogService()!= null)
-					this.logService.log(this.logService.LOG_WARNING, "Document '"+sDocument.getSName()+"' removing a markable '"+markable.getLevelName()+"' with SName '"+markable.getSName()+"' because its span is empty, Salt graph is maybe incomplete...");
+					this.logService.log(LogService.LOG_WARNING, "Document '"+sDocument.getSName()+"' removing a markable '"+markable.getLevelName()+"' with SName '"+markable.getSName()+"' because its span is empty, Salt graph is maybe incomplete...");
 				document.removeMarkable(markable);
 			}else{
 				Ids.put(markable.getId(), "");
@@ -283,7 +283,7 @@ public class Salt2MMAX2Mapper
 					value = getId(value);
 					if(value == null){
 						if (this.getLogService()!= null)
-							this.logService.log(this.logService.LOG_WARNING, "Document '"+sDocument.getSName()+"' removing a markable '"+markable.getLevelName()+"' with SName '"+markable.getSName()+"' because its attribute '"+attribute.getName()+"="+attribute.getValue()+"' references an unknown node, Salt graph is maybe incomplete...");
+							this.logService.log(LogService.LOG_WARNING, "Document '"+sDocument.getSName()+"' removing a markable '"+markable.getLevelName()+"' with SName '"+markable.getSName()+"' because its attribute '"+attribute.getName()+"="+attribute.getValue()+"' references an unknown node, Salt graph is maybe incomplete...");
 						document.removeMarkable(markable);
 						continue;
 					}
@@ -295,7 +295,7 @@ public class Salt2MMAX2Mapper
 					if(!Ids.containsKey(value)){
 						MarkablePointerAttributeFactory pointerFac = (MarkablePointerAttributeFactory) attribute.getFactory();
 						if (this.getLogService()!= null)
-							this.logService.log(this.logService.LOG_WARNING, "Document '"+sDocument.getSName()+"' removing pointing attribute value '"+attribute.getFactory().getAttributeName()
+							this.logService.log(LogService.LOG_WARNING, "Document '"+sDocument.getSName()+"' removing pointing attribute value '"+attribute.getFactory().getAttributeName()
 									+"' pointing to a markable of type '"+pointerFac.getTargetSchemeName()+"' because markable is not present (it has maybe been removed earlier)");
 						attribute.setValue("");
 					}
@@ -320,7 +320,7 @@ public class Salt2MMAX2Mapper
 	
 	public void finalizeCorpusStructure(SaltExtendedCorpus corpus, SchemeFactory schemeFactory) throws MMAX2ExporterException{
 		for (Scheme scheme: corpus.getSchemes()){
-			String schemeName = scheme.getName();
+			//String schemeName = scheme.getName();
 			ArrayList<MarkableAttributeFactory> markableAttributesFactories = scheme.getAttributesFactories();
 			
 			for(MarkableAttributeFactory markableAttributeFactory: markableAttributesFactories){
@@ -527,7 +527,7 @@ public class Salt2MMAX2Mapper
 		
 		if(tokenList.size() != 0){
 			if (this.getLogService()!= null)
-				this.logService.log(this.logService.LOG_WARNING, "There are tokens without textual relation. I shall associate them with dummy 1..1 span");
+				this.logService.log(LogService.LOG_WARNING, "There are tokens without textual relation. I shall associate them with dummy 1..1 span");
 			
 			for(SToken sToken: tokenList){
 				getNewSpan(sToken,"1","1");

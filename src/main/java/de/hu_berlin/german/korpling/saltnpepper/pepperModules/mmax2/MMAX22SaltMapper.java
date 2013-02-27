@@ -19,17 +19,13 @@ package de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2;
 
 import java.util.ArrayList;
 import java.util.Hashtable;
-import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.osgi.service.log.LogService;
 
-import com.sun.org.apache.bcel.internal.generic.NEW;
-
 import de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2.SaltExtendedDocumentFactory.SaltExtendedDocument;
 import de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2.SaltExtendedMarkableFactory.SaltExtendedMarkable;
 import de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2.exceptions.MMAX2ImporterException;
-import de.hu_berlin.german.korpling.saltnpepper.salt.graph.Edge;
 import de.hu_berlin.german.korpling.saltnpepper.salt.saltCommon.SaltCommonFactory;
 import de.hu_berlin.german.korpling.saltnpepper.salt.saltCommon.sCorpusStructure.SDocument;
 import de.hu_berlin.german.korpling.saltnpepper.salt.saltCommon.sDocumentStructure.SDocumentGraph;
@@ -38,7 +34,6 @@ import de.hu_berlin.german.korpling.saltnpepper.salt.saltCommon.sDocumentStructu
 import de.hu_berlin.german.korpling.saltnpepper.salt.saltCommon.sDocumentStructure.SSpan;
 import de.hu_berlin.german.korpling.saltnpepper.salt.saltCommon.sDocumentStructure.SSpanningRelation;
 import de.hu_berlin.german.korpling.saltnpepper.salt.saltCommon.sDocumentStructure.SStructure;
-import de.hu_berlin.german.korpling.saltnpepper.salt.saltCommon.sDocumentStructure.SStructuredNode;
 import de.hu_berlin.german.korpling.saltnpepper.salt.saltCommon.sDocumentStructure.STextualDS;
 import de.hu_berlin.german.korpling.saltnpepper.salt.saltCommon.sDocumentStructure.STextualRelation;
 import de.hu_berlin.german.korpling.saltnpepper.salt.saltCommon.sDocumentStructure.SToken;
@@ -109,9 +104,7 @@ public class MMAX22SaltMapper
 			}
 		}
 		String totalText = StringUtils.join(tokens,""); 
-		
-
-		
+	
 		//ArrayList<SLayer> sLayerNodes = new ArrayList<SLayer>();
 		//ArrayList<SaltExtendedMarkable> sLayerMarkables = new ArrayList<SaltExtendedMarkable>();
 		
@@ -279,9 +272,6 @@ public class MMAX22SaltMapper
 			completeSPointer(sPointerNodes.get(i),sPointerMarkables.get(i));
 		}
 		
-		
-		
-		
 		SLayer mmaxSLayer = null;
 		for(SLayer sLayer: this.SLayerHash.values()){
 			if(sLayer.getSName().equals("Mmax2_imp")){
@@ -305,6 +295,8 @@ public class MMAX22SaltMapper
 		
 		/* Creating new SSpans */
 		
+
+		
 		
 		for(Scheme scheme: newMarkables.keySet()){
 			for(SaltExtendedMarkable markable: newMarkables.get(scheme)){
@@ -312,6 +304,8 @@ public class MMAX22SaltMapper
 				sSpan.setSName(markable.getScheme().getName());
 				registerSNode(markable.getId(),sSpan);
 				attachSNode2SLayerAndDocument(sDocumentGraph,mmaxSLayer,sSpan);
+				
+				
 				
 				String span = markable.getSpan();
 				String[] spans = span.split(",");
@@ -380,6 +374,9 @@ public class MMAX22SaltMapper
 						throw new MMAX2ImporterException("Developper error: unknown type of markable attribute '"+attributeType+"'...");
 					}		
 				}
+				
+				//System.out.println("Created "+sSpan);
+				//System.out.println("From "+ markable);
 			}
 		}
 		

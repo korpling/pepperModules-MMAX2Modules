@@ -21,38 +21,33 @@ import eurac.commul.annotations.mmax2wrapper.SchemeFactory.Scheme;
 public class SaltExtendedFileGenerator extends FileGenerator {
 	
 	
-	public static void createCorpus(SaltExtendedCorpus corpus, String outputPath, String ressourcePath) throws MMAX2WrapperException, IOException, ParserConfigurationException
+	public static void createCorpus(SaltExtendedCorpus corpus, String ressourcePath) throws MMAX2WrapperException, IOException, ParserConfigurationException
 	{   
-		createCorpus_t(corpus, outputPath, ressourcePath);
+		createCorpus_t(corpus, ressourcePath);
 		
-		outputPath = outputPath.replace("//", "/");
-		if (!outputPath.endsWith(File.separator)){
-			outputPath = outputPath.concat(File.separator);
-		} 
-		
-		File saltInfosDirectory = new File (outputPath + SaltExtendedMmax2Infos.SALT_INFO_FOLDER);
+		File saltInfosDirectory = corpus.getSaltInfoPath();
 		if (!saltInfosDirectory.mkdirs()){ 
-			throw new MMAX2ExporterException("Cannot create folder for SaltInfoCustomizations in '"+outputPath+"'");
+			throw new MMAX2ExporterException("Cannot create folder for SaltInfo '"+saltInfosDirectory.getAbsolutePath()+"'");
 		}
 		
 		
 		ArrayList<Scheme> schemes = corpus.getSchemes();
 		
 		for(SaltExtendedDocument document: corpus.getSaltExtendedDocuments()){
-			createWordsFile(document, outputPath);
-			createSaltInfoFile(document, outputPath);
-			createDocumentFile(document, outputPath);
+			createWordsFile(document);
+			createSaltInfoFile(document);
+			createDocumentFile(document);
 			
 			for(Scheme scheme: schemes){
-				createMarkableFile(document, scheme, outputPath);
+				createMarkableFile(document, scheme);
 				
 			}
 		}
 	}
 	
 	
-	public static void createSaltInfoFile(SaltExtendedDocument document, String corpusPath) throws IOException, MMAX2WrapperException, ParserConfigurationException{
-		OutputXmlFile(corpusPath + File.separator + SaltExtendedMmax2Infos.SALT_INFO_FOLDER + File.separator + document.getDocumentId() + SaltExtendedMmax2Infos.SALT_INFO_FILE_ENDING,
+	public static void createSaltInfoFile(SaltExtendedDocument document) throws IOException, MMAX2WrapperException, ParserConfigurationException{
+		OutputXmlFile(document.getCorpus().getSaltInfoPath().getAbsolutePath() + File.separator + document.getDocumentId() + SaltExtendedMmax2Infos.SALT_INFO_FILE_ENDING,
 				createSaltInfoFileString(document));
 	}
 	

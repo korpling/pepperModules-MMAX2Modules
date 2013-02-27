@@ -252,7 +252,7 @@ public class MMAX2Exporter extends PepperExporterImpl implements PepperExporter
 			mapperCorpus.setLogService(this.getLogService());
 		
 		SaltExtendedCorpusFactory corpusFactory = new SaltExtendedCorpusFactory(documentBuilder);
-		corpus = corpusFactory.newCorpus();
+		corpus = corpusFactory.newEmptyCorpus(new File(this.getCorpusDefinition().getCorpusPath().toFileString()));
 		schemeFactory = new SchemeFactory(corpus,documentBuilder);
 		
 
@@ -281,7 +281,7 @@ public class MMAX2Exporter extends PepperExporterImpl implements PepperExporter
 		
 		mapperCorpus.finalizeCorpusStructure(corpus,schemeFactory);
 		try {
-			SaltExtendedFileGenerator.createCorpus(corpus, this.getCorpusDefinition().getCorpusPath().toFileString(), this.getResources().toFileString());
+			SaltExtendedFileGenerator.createCorpus(corpus, this.getResources().toFileString());
 		} catch (Exception exception) {
 			exception.printStackTrace();
 			if (getLogService()!= null)

@@ -9,6 +9,7 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.xml.sax.SAXException;
 
+import de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2.SaltExtendedCorpusFactory.SaltExtendedCorpus;
 import de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2.SaltExtendedMarkableFactory.SaltExtendedMarkable;
 import eurac.commul.annotations.mmax2wrapper.CorpusFactory.Corpus;
 import eurac.commul.annotations.mmax2wrapper.DocumentFactory;
@@ -17,26 +18,30 @@ import eurac.commul.annotations.mmax2wrapper.MarkableFactory.Markable;
 import eurac.commul.annotations.mmax2wrapper.SchemeFactory.Scheme;
 
 public class SaltExtendedDocumentFactory extends DocumentFactory {
+	private SaltExtendedCorpus corpus;
 	
-	public SaltExtendedDocumentFactory(Corpus corpus) throws ParserConfigurationException {
+	
+	public SaltExtendedDocumentFactory(SaltExtendedCorpus corpus) throws ParserConfigurationException {
 		super(corpus);
+		this.corpus = corpus;
 	}
 	
-	public SaltExtendedDocumentFactory(Corpus corpus, DocumentBuilder documentBuilder) {
+	public SaltExtendedDocumentFactory(SaltExtendedCorpus corpus, DocumentBuilder documentBuilder) {
 		super(corpus,documentBuilder);
+		this.corpus = corpus;
 	}
 	
-	public SaltExtendedDocument getNewDocument(String documentId, File corpusPath) throws MMAX2WrapperException, SAXException, IOException, ParserConfigurationException{
-		return new SaltExtendedDocument(documentId,this,this.getBaseDataUnits(documentId, corpusPath),this.getSaltExtendedMarkables(documentId, corpusPath));
+	public SaltExtendedDocument getNewDocument(String documentId) throws MMAX2WrapperException, SAXException, IOException, ParserConfigurationException{
+		return new SaltExtendedDocument(documentId,this,this.getBaseDataUnits(documentId, this.corpus.getCorpusPath(), this.corpus.getBaseDataPath()),this.getSaltExtendedMarkables(documentId));
 	}
 	
-	protected ArrayList<SaltExtendedMarkable> getSaltExtendedMarkables(String documentId, File corpusPath) throws SAXException, IOException, ParserConfigurationException, MMAX2WrapperException{
+	protected ArrayList<SaltExtendedMarkable> getSaltExtendedMarkables(String documentId) throws SAXException, IOException, ParserConfigurationException, MMAX2WrapperException{
 		ArrayList<SaltExtendedMarkable> markables = new ArrayList<SaltExtendedMarkable>();
 		
 		ArrayList<Scheme> schemes = this.corpus.getSchemes();
 		for(Scheme scheme: schemes){				
 			SaltExtendedMarkableFactory markableFactory = this.getMarkableFactory(scheme);
-			markables.addAll(markableFactory.getSaltExtendedMarkables(documentId,corpusPath));
+			markables.addAll(markableFactory.getSaltExtendedMarkables(documentId,this.corpus.getMarkablesPath(),this.corpus.getSaltInfoPath()));
 		}
 		return markables;
 	}
@@ -101,6 +106,10 @@ public class SaltExtendedDocumentFactory extends DocumentFactory {
 			
 			
 			return results;
+		}
+		
+		public SaltExtendedCorpus getCorpus(){
+			return corpus;
 		}
 	}
 

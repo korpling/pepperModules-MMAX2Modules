@@ -52,7 +52,7 @@
 			<version>1.0</version>
 			<scope>system</scope>
 			<type>jar</type>
-			<systemPath>/home/mush/workspace/Commul-Mmax2Wrapper/mmax2wrapper.jar</systemPath>
+			<systemPath>/home/mush/workspace/mmax2wrapper/mmax2wrapper.jar</systemPath>
 		</dependency>
 	</dependencies>
 	
