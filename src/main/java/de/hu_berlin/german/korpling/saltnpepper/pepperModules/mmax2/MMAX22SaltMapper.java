@@ -342,6 +342,12 @@ public class MMAX22SaltMapper
 				sSpan.setSName(markable.getScheme().getName());
 				sDocumentGraph.addSNode(sSpan);
 				registerSNode(markable.getId(),sSpan);
+				
+				SAnnotation sAnnotation = SaltCommonFactory.eINSTANCE.createSAnnotation();
+				sAnnotation.setSNS("mmax");
+				sAnnotation.setSName("markable");
+				sAnnotation.setSValue(markable.getScheme().getName());
+				sSpan.addSAnnotation(sAnnotation);
 
 				mmaxSLayer.getSNodes().add(sSpan);
 				sSpan.getSLayers().add(mmaxSLayer);
@@ -375,6 +381,7 @@ public class MMAX22SaltMapper
 							||attributeType.equals(MarkableSetAttributeFactory.setType)){
 						SAnnotation sAnnotation = SaltCommonFactory.eINSTANCE.createSAnnotation();
 						sAnnotation.setSName(markableAttribute.getName());
+						sAnnotation.setSNS("mmax");
 						
 						String value = markableAttribute.getValue();
 						value = value.replaceAll("\n", "");
@@ -383,6 +390,7 @@ public class MMAX22SaltMapper
 					}else if(attributeType.equals(MarkablePointerAttributeFactory.pointerType)){
 						SPointingRelation sPointingRelation = SaltCommonFactory.eINSTANCE.createSPointingRelation();
 						sPointingRelation.setSName(markableAttribute.getName());
+						
 						sDocumentGraph.addSRelation(sPointingRelation);
 						sPointingRelation.addSType(markableAttribute.getName());
 						
