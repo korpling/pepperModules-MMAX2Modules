@@ -103,7 +103,7 @@ public class MMAX2Importer extends PepperImporterImpl implements PepperImporter
 	 * Defines the number of processes which can maximal work in parallel for importing documents.
 	 * Means the number of parallel imported documents. Default value is 5.
 	 */
-	private Integer numOfParallelDocuments= 1;
+	private Integer numOfParallelDocuments= 5;
 	/**
 	 * Sets the number of processes which can maximal work in parallel for importing documents.
 	 * Means the number of parallel imported documents.

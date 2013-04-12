@@ -131,9 +131,6 @@ public class MMAX2Exporter extends PepperExporterImpl implements PepperExporter
 	//public static final String LIMIT_SIZE_NOMINAL_ATTR="mmax2Exporter.limitNominalSetSize";
 	//private int limitNominalSetSize = -1;
 	
-	public static final String ALLOW_MULTIPLE_SAME_LAYER_SNAME="mmax2Exporter.allowSeveralLayerSameName";
-	private boolean allowSeveralLayerSameName = false;
-	
 // ========================== end: flagging for parallel running
 	/**
 	 * a property representation of a property file
@@ -189,26 +186,6 @@ public class MMAX2Exporter extends PepperExporterImpl implements PepperExporter
 					throw new MMAX2ExporterException("Cannot set correct property value of property "+PROP_NUM_OF_PARALLEL_DOCUMENTS+" to "+this.getName()+", because of the value is not castable to Integer. A correct value must be a positiv, whole number (>0).\n Nested exception: "+ e.getMessage());
 				}
 			}
-			
-//			if (this.props.containsKey(LIMIT_SIZE_NOMINAL_ATTR))
-//			{
-//				try {
-//					this.limitNominalSetSize = new Integer(this.props.getProperty(LIMIT_SIZE_NOMINAL_ATTR));
-//				} catch (Exception e) 
-//				{
-//					throw new MMAX2ExporterException("Cannot set correct property value of property "+PROP_RUN_IN_PARALLEL+" to "+this.getName()+", because of the value is not castable to Boolean. A correct value can contain 'true' or 'false'.\n Nested exception: "+ e.getMessage());
-//				}
-//			}
-			
-			if (this.props.containsKey(ALLOW_MULTIPLE_SAME_LAYER_SNAME))
-			{
-				try {
-					this.allowSeveralLayerSameName= new Boolean(this.props.getProperty(ALLOW_MULTIPLE_SAME_LAYER_SNAME));
-				} catch (Exception e) 
-				{
-					throw new MMAX2ExporterException("Cannot set correct property value of property "+ALLOW_MULTIPLE_SAME_LAYER_SNAME+" to "+this.getName()+", because of the value is not castable to Boolean. A correct value can contain 'true' or 'false'.\n Nested exception: "+ e.getMessage());
-				}
-			}
 		}//check if flag for running in parallel is set
 	}
 	
@@ -236,7 +213,6 @@ public class MMAX2Exporter extends PepperExporterImpl implements PepperExporter
 		}//extracts special parameters
 		//if(this.limitNominalSetSize != -1)
 			//Salt2MMAX2Mapper.SetLIMIT_SIZE_NOMINAL_ATTR(this.limitNominalSetSize);
-		Salt2MMAX2Mapper.setALLOW_MULTIPLE_SAME_LAYER_SNAME(this.allowSeveralLayerSameName);
 		
 		DocumentBuilder documentBuilder;
 		try {
@@ -281,7 +257,9 @@ public class MMAX2Exporter extends PepperExporterImpl implements PepperExporter
 		
 		mapperCorpus.finalizeCorpusStructure(corpus,schemeFactory);
 		try {
-			SaltExtendedFileGenerator.createCorpus(corpus, this.getResources().toFileString());
+			String ressourcePath = this.getResources().toFileString();
+			ressourcePath = ressourcePath.concat(File.separator).concat("dtd");
+			SaltExtendedFileGenerator.createCorpus(corpus, ressourcePath);
 		} catch (Exception exception) {
 			exception.printStackTrace();
 			if (getLogService()!= null)
@@ -399,7 +377,7 @@ public class MMAX2Exporter extends PepperExporterImpl implements PepperExporter
 				throw new MMAX2ExporterException("BUG: Cannot start export, because no SDocument object is given.");
 			try 
 			{
-				mapper.mapSDocument(corpus,(SDocument)sDocumentId.getSIdentifiableElement(),documentFactory,schemeFactory);
+				mapper.mapAllSDocument(corpus,(SDocument)sDocumentId.getSIdentifiableElement(),documentFactory,schemeFactory);
 				getPepperModuleController().put(sDocumentId);
 			}catch (Exception e)
 			{

@@ -11,12 +11,12 @@ public class SaltExtendedMmax2Infos extends Mmax2Infos {
 	public static final String SALT_INFOS_NODE_NAME = "saltInfos";
 	public static final String SALT_INFO_NODE_NAME = "saltInfo";
 	public static final String SALT_INFO_ID_ATTR_NAME = "id";
-	public static final String SALT_INFO_SLAYER_ATTR_NAME = "salt_layer";
 	public static final String SALT_INFO_STYPE_ATTR_NAME = "salt_type";
 	public static final String SALT_INFO_SNAME_ATTR_NAME = "salt_name";
 	public static final String SALT_INFO_SID_ATTR_NAME = "salt_id";
 	
 	public static final String SALT_INFO_TYPE_SDOCUMENT = "SDocument";
+	public static final String SALT_INFO_TYPE_SDOCUMENT_GRAPH = "SDocumentGraph";
 	public static final String SALT_INFO_TYPE_SLAYER = "SLayer";
 	public static final String SALT_INFO_TYPE_STEXTUALDS = "STextualDS";
 	public static final String SALT_INFO_TYPE_SSPAN = "SSpan";
@@ -28,5 +28,6 @@ public class SaltExtendedMmax2Infos extends Mmax2Infos {
 	public static final String SALT_INFO_TYPE_SPOINTING_REL = "SPointingRel";
 	public static final String SALT_INFO_TYPE_SANNOTATION = "SAnnotation";
 	public static final String SALT_INFO_TYPE_SMETAANNOTATION = "SMetaAnnotation";
-	
+	public static final String SALT_INFO_TYPE_SLAYER_LINK = "SLayer_link";	
+	public static final String SALT_INFO_TYPE_STYPE_LINK = "SType_link";	
 }

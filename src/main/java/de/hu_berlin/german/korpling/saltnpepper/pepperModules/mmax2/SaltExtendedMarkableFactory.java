@@ -30,82 +30,26 @@ public class SaltExtendedMarkableFactory extends MarkableFactory{
 		super(scheme,documentBuilder);
 	}
 	
-	public ArrayList<SaltExtendedMarkable> getSaltExtendedMarkables(String documentId, File markablesPath, File saltInfoPath) throws IOException, SAXException, ParserConfigurationException, MMAX2WrapperException {
-		if(this.documentBuilder == null)
-			throw new SaltExtendedMMAX2WrapperException("To use function 'getCorpus' a DocumentBuilder needs to be provided at instantiation");
-		
-		Hashtable<String,Markable> correspondance = new Hashtable<String,Markable>();	
-		for(Markable markable : super.getMarkables(documentId,markablesPath)){
-			correspondance.put(markable.getId(), markable);			
-		}
-		
-		File saltInfoFile = new File(saltInfoPath+ File.separator + SaltExtendedMmax2Infos.SALT_INFO_FOLDER + File.separator+ documentId + SaltExtendedMmax2Infos.SALT_INFO_FILE_ENDING);	
-		
+	public ArrayList<SaltExtendedMarkable> getSaltExtendedMarkables(String documentId, File markablesPath, Hashtable<String,Hashtable<String,String>> saltInfos) throws IOException, SAXException, ParserConfigurationException, MMAX2WrapperException {
 		ArrayList<SaltExtendedMarkable> results = new ArrayList<SaltExtendedMarkable>();
-		if(saltInfoFile.exists()){
-			NodeList nodes = this.documentBuilder.parse(saltInfoFile).getDocumentElement().getChildNodes();
-					
-			for(int i = 0; i < nodes.getLength(); i ++){			
-				Node xmlNode = nodes.item(i);
-				String nodeName = xmlNode.getNodeName();
-				if((nodeName == null) || (!nodeName.equals(SaltExtendedMmax2Infos.SALT_INFO_NODE_NAME))){
-					continue;
-				}
-				
-				NamedNodeMap attributes = xmlNode.getAttributes();
-				
-				Node idAttributeNode = attributes.getNamedItem(SaltExtendedMmax2Infos.SALT_INFO_ID_ATTR_NAME);
-				if(idAttributeNode == null){
-					throw new SaltExtendedMMAX2WrapperException("Salt information '"+xmlNode.toString()+" in File '"+saltInfoFile+"' has no '"+SaltExtendedMmax2Infos.SALT_INFO_ID_ATTR_NAME+"' attribute defined");
-				}
-				String idAttribute = idAttributeNode.getNodeValue();
-					
-				Node sLayerAttributeNode = attributes.getNamedItem(SaltExtendedMmax2Infos.SALT_INFO_SLAYER_ATTR_NAME);
-				if(sLayerAttributeNode == null){
-					throw new SaltExtendedMMAX2WrapperException("Salt information '"+xmlNode.toString()+" in File '"+saltInfoFile+"' has no '"+SaltExtendedMmax2Infos.SALT_INFO_SLAYER_ATTR_NAME+"' attribute defined");
-				}
-				String sLayerAttributeId = sLayerAttributeNode.getNodeValue();
-				
-				Node sTypeAttributeNode = attributes.getNamedItem(SaltExtendedMmax2Infos.SALT_INFO_STYPE_ATTR_NAME);
-				if(sTypeAttributeNode == null){
-					throw new SaltExtendedMMAX2WrapperException("Salt information '"+xmlNode.toString()+" in File '"+saltInfoFile+"' has no '"+SaltExtendedMmax2Infos.SALT_INFO_STYPE_ATTR_NAME+"' attribute defined");
-				}
-				String sTypeAttribute = sTypeAttributeNode.getNodeValue();
-				
-				Node sNameAttributeNode = attributes.getNamedItem(SaltExtendedMmax2Infos.SALT_INFO_SNAME_ATTR_NAME);
-				if(sNameAttributeNode == null){
-					throw new SaltExtendedMMAX2WrapperException("Salt information '"+xmlNode.toString()+" in File '"+saltInfoFile+"' has no '"+SaltExtendedMmax2Infos.SALT_INFO_SNAME_ATTR_NAME+"' attribute defined");
-				}
-				String sNameAttribute = sNameAttributeNode.getNodeValue();
-				
-				Node sidAttributeNode = attributes.getNamedItem(SaltExtendedMmax2Infos.SALT_INFO_SID_ATTR_NAME);
-				if(sidAttributeNode == null){
-					throw new SaltExtendedMMAX2WrapperException("Salt information '"+xmlNode.toString()+" in File '"+saltInfoFile+"' has no '"+SaltExtendedMmax2Infos.SALT_INFO_SID_ATTR_NAME+"' attribute defined");
-				}
-				String sIdAttribute = sidAttributeNode.getNodeValue();
-				
-				if(correspondance.containsKey(idAttribute)){
-					Markable markable = correspondance.get(idAttribute);
-					correspondance.remove(idAttribute);
-					results.add(new SaltExtendedMarkable(this,idAttribute, markable.getSpan(), markable.getAttributes(), sLayerAttributeId, sTypeAttribute,sNameAttribute, sIdAttribute));
-				}
+		for(Markable markable : super.getMarkables(documentId,markablesPath)){
+			if(saltInfos.containsKey(markable.getId())){
+				Hashtable<String,String> saltInfoMarkable = saltInfos.get(markable.getId());
+				results.add(new SaltExtendedMarkable(this,markable.getId(), markable.getSpan(), markable.getAttributes(), saltInfoMarkable.get("SType"),saltInfoMarkable.get("SName"), saltInfoMarkable.get("SId")));	
+			}else{
+				results.add(new SaltExtendedMarkable(this,markable.getId(), markable.getSpan(), markable.getAttributes()));
 			}
 		}
-		for(Markable markable: correspondance.values()){
-			results.add(new SaltExtendedMarkable(this,markable.getId(), markable.getSpan(), markable.getAttributes()));
-		}
-
 		return results;	
 	}
 	
-	public SaltExtendedMarkable newMarkable(String id, String span, ArrayList<MarkableAttribute> attributes, String sLayerId, String sType, String sName, String sId){
-		return new SaltExtendedMarkable(this, id, span, attributes, sLayerId, sType, sName, sId);
+	public SaltExtendedMarkable newMarkable(String id, String span, ArrayList<MarkableAttribute> attributes, String sType, String sName, String sId){
+		return new SaltExtendedMarkable(this, id, span, attributes, sType, sName, sId);
 	}
 	
 	public class SaltExtendedMarkable extends Markable {
 		private boolean hasSaltInformation;
 		private String sId;
-		private String sLayerId;
 		private String sType;
 		private String sName;
 		
@@ -114,10 +58,9 @@ public class SaltExtendedMarkableFactory extends MarkableFactory{
 			this.hasSaltInformation = false;
 		}
 		
-		protected SaltExtendedMarkable(SaltExtendedMarkableFactory factory, String id, String span, ArrayList<MarkableAttribute> attributes, String sLayerId, String sType, String sName, String sId){
+		protected SaltExtendedMarkable(SaltExtendedMarkableFactory factory, String id, String span, ArrayList<MarkableAttribute> attributes, String sType, String sName, String sId){
 			super(factory,id,span,attributes);
 			this.hasSaltInformation = true;
-			this.sLayerId = sLayerId;
 			this.sType = sType;
 			this.sName = sName;
 			this.sId = sId;
@@ -125,10 +68,6 @@ public class SaltExtendedMarkableFactory extends MarkableFactory{
 		
 		public String getSName() {
 			return this.sName;
-		}
-		
-		public String getSLayerId(){
-			return this.sLayerId;
 		}
 		
 		public String getSType() {

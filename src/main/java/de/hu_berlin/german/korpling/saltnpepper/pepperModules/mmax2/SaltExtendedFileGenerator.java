@@ -75,7 +75,6 @@ public class SaltExtendedFileGenerator extends FileGenerator {
 	 "	<"+ SaltExtendedMmax2Infos.SALT_INFO_NODE_NAME+" "
 			 +SaltExtendedMmax2Infos.SALT_INFO_ID_ATTR_NAME+"=\"@markable_id@\" "
 			 +SaltExtendedMmax2Infos.SALT_INFO_SID_ATTR_NAME+"=\"@salt_id@\" "
-			 +SaltExtendedMmax2Infos.SALT_INFO_SLAYER_ATTR_NAME+"=\"@salt_layer@\" "
 			 +SaltExtendedMmax2Infos.SALT_INFO_STYPE_ATTR_NAME+"=\"@salt_type@\" "
 			 +SaltExtendedMmax2Infos.SALT_INFO_SNAME_ATTR_NAME+"=\"@salt_name@\"/>";
 			
@@ -83,7 +82,6 @@ public class SaltExtendedFileGenerator extends FileGenerator {
 		String cpy = MMAX2_SALT_INFO_ENTRY_GENERIC + "";
 		cpy = cpy.replaceAll("@markable_id@", EscapeString(markable.getId()));
 		cpy = cpy.replaceAll("@salt_id@", EscapeString(markable.getSId()));
-		cpy = cpy.replaceAll("@salt_layer@", EscapeString(markable.getSLayerId()));
 		cpy = cpy.replaceAll("@salt_type@", EscapeString(markable.getSType()));
 		cpy = cpy.replaceAll("@salt_name@", EscapeString(markable.getSName()));
 		
