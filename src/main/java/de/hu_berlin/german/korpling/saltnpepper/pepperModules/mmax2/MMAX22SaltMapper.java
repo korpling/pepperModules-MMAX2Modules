@@ -71,6 +71,7 @@ public class MMAX22SaltMapper
 	private Hashtable<String,SToken> STokensHash;
 	private Hashtable<String,SaltExtendedMarkable> SaltExtendedMarkableHash;
 	private Hashtable<String,STextualDS> sTextualDsBaseDataUnitCorrespondance;
+	private Hashtable<String,String> claimSContainer;
 	
 
 // ================================================ start: LogService	
@@ -96,6 +97,7 @@ public class MMAX22SaltMapper
 		this.STokensHash = new Hashtable<String, SToken>();
 		this.SaltExtendedMarkableHash = new Hashtable<String, SaltExtendedMarkableFactory.SaltExtendedMarkable>();
 		this.sTextualDsBaseDataUnitCorrespondance = new Hashtable<String, STextualDS>();
+		this.claimSContainer = new Hashtable<String, String>();
 	
 		SDocumentGraph sDocumentGraph = sDocument.getSDocumentGraph();
 		sDocumentGraph.setSName(document.getDocumentId()+"_graph");
@@ -264,6 +266,10 @@ public class MMAX22SaltMapper
 					sLayerLinkMarkables.add(markable);				
 				}else if(sType.equals(SaltExtendedMmax2Infos.SALT_INFO_TYPE_STYPE_LINK)){
 					sTypeLinkMarkables.add(markable);				
+				}else if(sType.equals(SaltExtendedMmax2Infos.SALT_INFO_TYPE_STYPE_LINK)){
+					sTypeLinkMarkables.add(markable);				
+				}else if(sType.equals(SaltExtendedMmax2Infos.SALT_INFO_TYPE_SCONTAINER)){
+					// Nothing is to be done for SContainer			
 				}else{
 					throw new MMAX2ImporterException("Developper error:Unknown type '"+sType+"'");
 				}
@@ -387,7 +393,7 @@ public class MMAX22SaltMapper
 						value = value.replaceAll("\n", "");
 						sAnnotation.setSValue(value);
 						sSpan.addSAnnotation(sAnnotation);
-					}else if(attributeType.equals(MarkablePointerAttributeFactory.pointerType)){
+					}else if(attributeType.equals(MarkablePointerAttributeFactory.pointerType)){ 
 						SPointingRelation sPointingRelation = SaltCommonFactory.eINSTANCE.createSPointingRelation();
 						sPointingRelation.setSName(markableAttribute.getName());
 						
@@ -395,7 +401,13 @@ public class MMAX22SaltMapper
 						sPointingRelation.addSType(markableAttribute.getName());
 						
 						sPointingRelation.setSSource(sSpan);
-						SNode sTarget = getSNode(markableAttribute.getValue());
+						SNode sTarget;// Est il possible de pointer sur quelque chose qui n'est pas un SNode?
+						SaltExtendedMarkable targetMarkable = this.SaltExtendedMarkableHash.get(markableAttribute.getValue());
+						if(!targetMarkable.getSType().equals(SaltExtendedMmax2Infos.SALT_INFO_TYPE_SCONTAINER)){
+							sTarget = getSNode(markableAttribute.getValue());
+						}else{
+							sTarget = getSNode(this.claimSContainer.get(markableAttribute.getValue()));
+						}
 						if(sTarget == null)
 							dataCorrupted("An unknown markable '"+markableAttribute.getValue()+"' is referenced as the target of the pointer '"+markableAttribute.getName()+"' within markable '"+markable+"'");
 						sPointingRelation.setSTarget(sTarget);
@@ -658,6 +670,7 @@ public class MMAX22SaltMapper
 		MarkableAttribute targetMarkableAttribute = null;
 		MarkableAttribute nameAttribute = null;
 		MarkableAttribute containerIdAttribute = null;
+		MarkableAttribute containerAttrNameAttribute = null;
 		MarkableAttribute valueAttribute = null;
 		
 		ArrayList<MarkableAttribute> markableAttributes = annotationMarkable.getAttributes();
@@ -671,6 +684,8 @@ public class MMAX22SaltMapper
 				nameAttribute = markableAttribute;
 			}else if(attributeName.equals("container_id")){
 				containerIdAttribute = markableAttribute;
+			}else if(attributeName.equals("container_attr")){
+				containerAttrNameAttribute = markableAttribute;
 			}else if(attributeName.equals("value")){
 				valueAttribute = markableAttribute;
 			}
@@ -694,11 +709,14 @@ public class MMAX22SaltMapper
 		if(!attributeNameSpace.equals("")){
 			completeAttributeName = attributeNameSpace+"__"+attributeName;
 		}
-		if(containerIdAttribute != null){
+		if((containerIdAttribute != null) && (containerAttrNameAttribute != null)){
 			annotationMarkable.removeAttribute(containerIdAttribute);
+			annotationMarkable.removeAttribute(containerAttrNameAttribute);
 			SaltExtendedMarkable containerMarkable = this.SaltExtendedMarkableHash.get(containerIdAttribute.getValue());
-			valueAttribute = containerMarkable.getAttribute(completeAttributeName);
+			valueAttribute = containerMarkable.getAttribute(containerAttrNameAttribute.getValue());
 			containerMarkable.removeAttribute(valueAttribute);
+			
+			this.claimSContainer.put(containerIdAttribute.getValue(), targetMarkableAttribute.getValue());
 		}
 		
 		if(valueAttribute == null)
@@ -720,6 +738,7 @@ public class MMAX22SaltMapper
 		MarkableAttribute targetMarkableAttribute = null;
 		MarkableAttribute nameAttribute = null;
 		MarkableAttribute containerIdAttribute = null;
+		MarkableAttribute containerAttrNameAttribute = null;
 		MarkableAttribute valueAttribute = null;
 		
 		ArrayList<MarkableAttribute> markableAttributes = annotationMarkable.getAttributes();
@@ -733,6 +752,8 @@ public class MMAX22SaltMapper
 				nameAttribute = markableAttribute;
 			}else if(attributeName.equals("container_id")){
 				containerIdAttribute = markableAttribute;
+			}else if(attributeName.equals("container_attr")){
+				containerAttrNameAttribute = markableAttribute;
 			}else if(attributeName.equals("value")){
 				valueAttribute = markableAttribute;
 			}
@@ -757,11 +778,13 @@ public class MMAX22SaltMapper
 			completeAttributeName = attributeNameSpace+"__"+attributeName;
 		}
 		
-		if(containerIdAttribute != null){
+		if((containerIdAttribute != null) && (containerAttrNameAttribute != null)){
 			annotationMarkable.removeAttribute(containerIdAttribute);
+			annotationMarkable.removeAttribute(containerAttrNameAttribute);
 			SaltExtendedMarkable containerMarkable = this.SaltExtendedMarkableHash.get(containerIdAttribute.getValue());
-			valueAttribute = containerMarkable.getAttribute(completeAttributeName);
+			valueAttribute = containerMarkable.getAttribute(containerAttrNameAttribute.getValue());
 			containerMarkable.removeAttribute(valueAttribute);
+			this.claimSContainer.put(containerIdAttribute.getValue(), annotationMarkable.getId());
 		}
 		
 		if(valueAttribute == null)

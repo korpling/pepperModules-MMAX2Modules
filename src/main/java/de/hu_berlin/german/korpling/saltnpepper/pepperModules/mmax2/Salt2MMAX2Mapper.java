@@ -18,18 +18,28 @@
 package de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2;
 
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.swing.text.html.HTMLDocument.HTMLReader.IsindexAction;
 import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.emf.common.util.BasicEList;
 import org.eclipse.emf.common.util.EList;
 import org.osgi.service.log.LogService;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 import com.sun.org.apache.bcel.internal.generic.DDIV;
 
@@ -37,6 +47,7 @@ import de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2.SaltExtended
 import de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2.SaltExtendedDocumentFactory.SaltExtendedDocument;
 import de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2.SaltExtendedMarkableFactory.SaltExtendedMarkable;
 import de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2.exceptions.MMAX2ExporterException;
+import de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2.exceptions.SaltExtendedMMAX2WrapperException;
 
 import de.hu_berlin.german.korpling.saltnpepper.salt.graph.Edge;
 import de.hu_berlin.german.korpling.saltnpepper.salt.saltCommon.sCorpusStructure.SDocument;
@@ -90,12 +101,25 @@ public class Salt2MMAX2Mapper
 		return logService;
 	}
 	
+	private final String CONDITION_NODE_NAME = "condition";
+	private final String SNODE_TYPE_ARGUMENT = "snode_type";
+	private final String ATTRIBUTE_NAMESPACE_REGEXP = "namespace_regexp";
+	private final String ATTRIBUTE_NAME_REGEXP = "name_regexp";
+	private final String ATTRIBUTE_VALUE_REGEXP = "value_regexp";
+	private final String SLAYER_NAME_REGEXP = "slayer_name_regexp";
+	private final String CONTAINER_SCHEME_NAME = "dest_scheme";
+	private final String CONTAINER_ATTR_NAME = "dest_attr";
+	
 	private Hashtable<STextualRelation,Integer> spanStextualRelationCorrespondance;
 	private Hashtable<STextualDS,ArrayList<String>> spanStextualDSCorrespondance;
 	private Hashtable<SNode,SaltExtendedMarkable> registeredSNodesMarkables;
 	private Hashtable<SRelation,SaltExtendedMarkable> registeredSRelationsMarkables;
 	private HashMap<SLayer,SaltExtendedMarkable> registeredSLayerMarkables;
 	private DocumentBuilder documentBuilder;
+	
+	private Hashtable<Object,Hashtable<Scheme,SaltExtendedMarkable>> sNodesMarkables;
+	private Hashtable<String,ArrayList<MatchCondition>> conditions;
+	
 
 	private SDocumentGraph sDocumentGraph;
 	private SDocument sDocument;
@@ -103,8 +127,89 @@ public class Salt2MMAX2Mapper
 	private SaltExtendedDocument document;
 	private SchemeFactory schemeFactory;
 	
-	public Salt2MMAX2Mapper(DocumentBuilder documentBuilder) {
+	public Salt2MMAX2Mapper(DocumentBuilder documentBuilder, String matchingConditionFilePath) throws SAXException, IOException {
 		this.documentBuilder = documentBuilder; 
+		
+		this.conditions = new Hashtable<String, ArrayList<MatchCondition>>();
+		this.conditions.put("All",new ArrayList<MatchCondition>());
+		
+		if(matchingConditionFilePath != null){
+			File configurationFile = new File(matchingConditionFilePath);	
+			
+			NodeList nodes = documentBuilder.parse(configurationFile).getDocumentElement().getChildNodes();
+			for(int i = 0; i < nodes.getLength(); i ++){	
+				Node xmlNode = nodes.item(i);
+				String nodeName = xmlNode.getNodeName();
+				if((nodeName == null) || (!nodeName.equals(CONDITION_NODE_NAME))){
+					continue;
+				}
+				NamedNodeMap attributes = xmlNode.getAttributes();
+					
+				Node snodeTypeAttributeNode = attributes.getNamedItem(SNODE_TYPE_ARGUMENT);
+				String sNodeType = "All";
+				if(snodeTypeAttributeNode != null){
+					sNodeType = snodeTypeAttributeNode.getNodeValue(); // Check if it matches a known type
+					attributes.removeNamedItem(SNODE_TYPE_ARGUMENT);
+				}
+				
+				Node nameSpaceAttributeNode = attributes.getNamedItem(ATTRIBUTE_NAMESPACE_REGEXP);
+				String nameSpaceRegExp = null;
+				if(nameSpaceAttributeNode != null){
+					nameSpaceRegExp = nameSpaceAttributeNode.getNodeValue(); 
+					attributes.removeNamedItem(ATTRIBUTE_NAMESPACE_REGEXP);
+				}
+				
+				Node nameAttributeNode = attributes.getNamedItem(ATTRIBUTE_NAME_REGEXP);
+				String nameRegExp = null;
+				if(nameAttributeNode != null){
+					nameRegExp = nameAttributeNode.getNodeValue(); 
+					attributes.removeNamedItem(ATTRIBUTE_NAME_REGEXP);
+				}
+				
+				Node valueAttributeNode = attributes.getNamedItem(ATTRIBUTE_VALUE_REGEXP);
+				String valueRegExp = null;
+				if(valueAttributeNode != null){
+					valueRegExp = valueAttributeNode.getNodeValue(); 
+					attributes.removeNamedItem(ATTRIBUTE_VALUE_REGEXP);
+				}
+				
+				Node sLayerNameNode = attributes.getNamedItem(SLAYER_NAME_REGEXP);
+				String sLayerNameRegExp = null;
+				if(sLayerNameNode != null){
+					sLayerNameRegExp = sLayerNameNode.getNodeValue(); 
+					attributes.removeNamedItem(SLAYER_NAME_REGEXP);
+				}
+				
+				Node destSchemeNode = attributes.getNamedItem(CONTAINER_SCHEME_NAME);
+				if(destSchemeNode == null){
+					throw new MMAX2ExporterException("Destination scheme '"+CONTAINER_SCHEME_NAME+"' on Node '"+xmlNode+"' is not defined...");
+				}
+				attributes.removeNamedItem(CONTAINER_SCHEME_NAME);
+				String schemeName = destSchemeNode.getNodeValue(); 
+				
+				Node destAttrNode = attributes.getNamedItem(CONTAINER_ATTR_NAME);
+				if(destAttrNode == null){
+					throw new MMAX2ExporterException("Destination attribute '"+CONTAINER_ATTR_NAME+"' on Node '"+xmlNode+"' is not defined...");
+				}
+				attributes.removeNamedItem(CONTAINER_ATTR_NAME);
+				String attrName = destAttrNode.getNodeValue(); 
+				
+				
+				if(attributes.getLength() != 0){
+					ArrayList<String> unknownAttributes = new ArrayList<String>();
+					for(int j = 0; j < attributes.getLength(); j++){
+						unknownAttributes.add(attributes.item(j).getNodeName());
+					}
+					throw new MMAX2ExporterException("Unknown attributes '"+StringUtils.join(unknownAttributes,",")+"' on Node '"+xmlNode+"'");
+				}
+				
+				if(!this.conditions.containsKey(sNodeType)){
+					this.conditions.put(sNodeType,new ArrayList<MatchCondition>());
+				}
+				ArrayList<MatchCondition> conditionsOfType = this.conditions.get(sNodeType);
+				conditionsOfType.add(new MatchCondition(nameSpaceRegExp, nameRegExp, valueRegExp,sLayerNameRegExp,schemeName,attrName));
+			}
+		}
 	}
 	
 
@@ -196,6 +301,8 @@ public class Salt2MMAX2Mapper
 		this.registeredSNodesMarkables = new Hashtable<SNode, SaltExtendedMarkableFactory.SaltExtendedMarkable>();
 		this.registeredSRelationsMarkables = new Hashtable<SRelation, SaltExtendedMarkableFactory.SaltExtendedMarkable>();
 		this.registeredSLayerMarkables = new HashMap<SLayer, SaltExtendedMarkableFactory.SaltExtendedMarkable>();
+		
+		this.sNodesMarkables = new Hashtable<Object, Hashtable<Scheme,SaltExtendedMarkable>>();
 		
 		this.document = factory.newDocument(documentName);
 		this.sDocument = sDocument;
@@ -305,22 +412,23 @@ public class Salt2MMAX2Mapper
 			
 		for(SNode sNode: allSnodes){
 			SaltExtendedMarkable markable = getSNodeMarkable(sNode);
-			
-			mapSMetaAnnotations(markable.getSName(),markable.getSId(),sNode,markable.getId(),markable.getSpan(),markable.getLevelName());
-			mapSAnnotations(markable.getSName(),markable.getSId(),sNode,markable.getId(),markable.getSpan(),markable.getLevelName());
-			
 			EList<SLayer> sLayers = sNode.getSLayers();
+			
+			mapSMetaAnnotations(markable.getSName(),markable.getSId(),sNode,markable.getId(),markable.getSpan(),markable.getLevelName(),sLayers);
+			mapSAnnotations(markable.getSName(),markable.getSId(),sNode,markable.getId(),markable.getSpan(),markable.getLevelName(),sLayers);
+			
 			if(sLayers.size() != 0)
 				mapSLayersToMarkable(markable,markable.getLevelName(),sLayers);
 		}
 	
 		for (SRelation sRelation: allSrelations){
 			SaltExtendedMarkable markable = getSRelationMarkable(sRelation);
+			EList<SLayer> sLayers = sRelation.getSLayers();		
 			
-			mapSMetaAnnotations(markable.getSName(),markable.getSId(),sRelation,markable.getId(),markable.getSpan(),markable.getLevelName());
-			mapSAnnotations(markable.getSName(),markable.getSId(),sRelation,markable.getId(),markable.getSpan(),markable.getLevelName());
+			mapSMetaAnnotations(markable.getSName(),markable.getSId(),sRelation,markable.getId(),markable.getSpan(),markable.getLevelName(),sLayers);
+			mapSAnnotations(markable.getSName(),markable.getSId(),sRelation,markable.getId(),markable.getSpan(),markable.getLevelName(),sLayers);
 			
-			EList<SLayer> sLayers = sRelation.getSLayers();			
+				
 			if(sLayers.size() != 0)
 				mapSLayersToMarkable(markable,markable.getLevelName(),sLayers);
 			
@@ -347,8 +455,8 @@ public class Salt2MMAX2Mapper
 			SaltExtendedMarkable markable = getMarkable(scheme,markableId,markableSPan,SaltExtendedMmax2Infos.SALT_INFO_TYPE_SDOCUMENT,sName,sId);
 			this.document.addMarkable(markable);
 	
-			mapSMetaAnnotations(sName,sId,this.sDocument,markableId,markableSPan,SaltExtendedMmax2Infos.SALT_INFO_TYPE_SDOCUMENT);
-			mapSAnnotations(sName,sId,this.sDocument,markableId,markableSPan,SaltExtendedMmax2Infos.SALT_INFO_TYPE_SDOCUMENT);
+			mapSMetaAnnotations(sName,sId,this.sDocument,markableId,markableSPan,SaltExtendedMmax2Infos.SALT_INFO_TYPE_SDOCUMENT,null);
+			mapSAnnotations(sName,sId,this.sDocument,markableId,markableSPan,SaltExtendedMmax2Infos.SALT_INFO_TYPE_SDOCUMENT,null);
 		}
 		{
 			String markableId = getNewId();
@@ -359,8 +467,8 @@ public class Salt2MMAX2Mapper
 			SaltExtendedMarkable markable = getMarkable(scheme,markableId,markableSPan,SaltExtendedMmax2Infos.SALT_INFO_TYPE_SDOCUMENT_GRAPH,sName,sId);
 			this.document.addMarkable(markable);
 	
-			mapSMetaAnnotations(sName,sId,this.sDocumentGraph,markableId,markableSPan,SaltExtendedMmax2Infos.SALT_INFO_TYPE_SDOCUMENT_GRAPH);
-			mapSAnnotations(sName,sId,this.sDocumentGraph,markableId,markableSPan,SaltExtendedMmax2Infos.SALT_INFO_TYPE_SDOCUMENT_GRAPH);
+			mapSMetaAnnotations(sName,sId,this.sDocumentGraph,markableId,markableSPan,SaltExtendedMmax2Infos.SALT_INFO_TYPE_SDOCUMENT_GRAPH,null);
+			mapSAnnotations(sName,sId,this.sDocumentGraph,markableId,markableSPan,SaltExtendedMmax2Infos.SALT_INFO_TYPE_SDOCUMENT_GRAPH,null);
 		}
 	}
 	
@@ -376,8 +484,8 @@ public class Salt2MMAX2Mapper
 		this.registeredSLayerMarkables.put(sLayer, markable);
 		this.document.addMarkable(markable);
 
-		mapSMetaAnnotations(sName,sId,sLayer,markableId,markableSPan,SaltExtendedMmax2Infos.SALT_INFO_TYPE_SLAYER);
-		mapSAnnotations(sName,sId,sLayer,markableId,markableSPan,SaltExtendedMmax2Infos.SALT_INFO_TYPE_SLAYER);
+		mapSMetaAnnotations(sName,sId,sLayer,markableId,markableSPan,SaltExtendedMmax2Infos.SALT_INFO_TYPE_SLAYER,null);
+		mapSAnnotations(sName,sId,sLayer,markableId,markableSPan,SaltExtendedMmax2Infos.SALT_INFO_TYPE_SLAYER,null);
 	}
 	
 	private SaltExtendedMarkable mapSToken(SToken sToken) throws MMAX2WrapperException {	
@@ -537,13 +645,14 @@ public class Salt2MMAX2Mapper
 									SMetaAnnotatableElement  sElem, 
 									String markableId, 
 									String markableSpan, 
-									String schemeBaseName) throws MMAX2WrapperException{
+									String schemeBaseName,
+									EList<SLayer> sLayers) throws MMAX2WrapperException{
 		
 		for (SMetaAnnotation sAnnotation : sElem.getSMetaAnnotations()){
 			String attributeName = sAnnotation.getSName();
 			String attributeValue = sAnnotation.getSValueSTEXT();
 			String attributeNs = sAnnotation.getSNS();
-			mapAnnotations(SaltExtendedMmax2Infos.SALT_INFO_TYPE_SMETAANNOTATION,sName,sId,markableId,markableSpan,schemeBaseName,attributeName,attributeNs,attributeValue);	
+			mapAnnotations(sElem,SaltExtendedMmax2Infos.SALT_INFO_TYPE_SMETAANNOTATION,sName,sId,markableId,markableSpan,schemeBaseName,attributeName,attributeNs,attributeValue,sLayers);	
 		}
 	}
 	
@@ -553,17 +662,19 @@ public class Salt2MMAX2Mapper
 								SAnnotatableElement  sELem, 
 								String elementId, 
 								String elementSpan, 
-								String schemeBaseName) throws MMAX2WrapperException{
+								String schemeBaseName,
+								EList<SLayer> sLayers) throws MMAX2WrapperException{
 		
 		for (SAnnotation sAnnotation : sELem.getSAnnotations()){
 			String attributeName = sAnnotation.getSName();
 			String attributeValue = sAnnotation.getSValueSTEXT();
 			String attributeNs = sAnnotation.getSNS();
-			mapAnnotations(SaltExtendedMmax2Infos.SALT_INFO_TYPE_SANNOTATION,sName,sId,elementId,elementSpan,schemeBaseName,attributeName,attributeNs,attributeValue);
+			mapAnnotations(sELem,SaltExtendedMmax2Infos.SALT_INFO_TYPE_SANNOTATION,sName,sId,elementId,elementSpan,schemeBaseName,attributeName,attributeNs,attributeValue,sLayers);
 		}
 	}
 	
-	private void mapAnnotations(String sType, 
+	private void mapAnnotations(Object sELem,
+								String sType, 
 								String sName, 
 								String sId, 
 								String idRef, 
@@ -571,7 +682,8 @@ public class Salt2MMAX2Mapper
 								String schemeBaseName,
 								String attributeName,
 								String attributeNs,
-								String attributeValue) throws MMAX2WrapperException{
+								String attributeValue,
+								EList<SLayer> sLayers) throws MMAX2WrapperException{
 		
 		String schemeName = schemeBaseName+"_"+sType;
 		String completeAttributeName;
@@ -588,11 +700,34 @@ public class Salt2MMAX2Mapper
 		addFreetextAttribute(markable,schemeName,"namespace",attributeNs);
 		addFreetextAttribute(markable,schemeName,"attr_name",attributeName);
 		
-		SaltExtendedMarkable containerMarkable = null;// To change when implementing the mapping system
+		SaltExtendedMarkable containerMarkable = null;
+		MatchCondition validated = matchSNode(schemeBaseName, attributeNs, attributeName, attributeValue,sLayers);
+				
+		if(validated != null){		
+			if(!this.sNodesMarkables.containsKey(sELem)){
+				this.sNodesMarkables.put(sELem,new Hashtable<Scheme, SaltExtendedMarkable>());
+			}
+			Hashtable<Scheme,SaltExtendedMarkable> associatedMarkables = this.sNodesMarkables.get(sELem);
+			
+			Scheme associatedScheme = getScheme(validated.getAssociatedSchemeName());
+			if(!associatedMarkables.containsKey(associatedScheme)){
+				containerMarkable = getMarkable(associatedScheme,getNewId(),span,SaltExtendedMmax2Infos.SALT_INFO_TYPE_SCONTAINER,sName,sId);
+				associatedMarkables.put(associatedScheme,containerMarkable);
+				document.addMarkable(containerMarkable);
+			}else{
+				containerMarkable = associatedMarkables.get(associatedScheme);
+			}
+			
+			String attributeContainerName = validated.getAssociatedAttributeName();
+			if(containerMarkable.getAttribute(attributeContainerName) != null){
+				throw new MMAX2ExporterException("Matched markable '"+markable+"' has already an attribute '"+attributeContainerName+"'");
+			}
+			addFreetextAttribute(containerMarkable,validated.getAssociatedSchemeName(),attributeContainerName,attributeValue);
+		}
 		
 		if(containerMarkable != null){
 			addFreetextAttribute(markable,schemeName,"container_id",containerMarkable.getId());
-			addFreetextAttribute(containerMarkable,containerMarkable.getScheme().getName(),completeAttributeName,attributeValue);	
+			addFreetextAttribute(markable,schemeName,"container_attr",validated.getAssociatedAttributeName());
 		}else{
 			addFreetextAttribute(markable,schemeName,"value",attributeValue);
 		}
@@ -686,6 +821,115 @@ public class Salt2MMAX2Mapper
 	}
 	
 	
+	public MatchCondition matchSNode(String sNodeType, String attributeNameSpace,String attributeName, String attributeValue, EList<SLayer> sLayers){
+
+		MatchCondition validated = null;
+		if(this.conditions.containsKey(sNodeType)){
+			ArrayList<MatchCondition> specificConditions = this.conditions.get(sNodeType);
+			for(MatchCondition matchCondition: specificConditions){
+				if(matchCondition.isMatched(attributeNameSpace, attributeName, attributeValue,sLayers)){
+					if(validated != null){
+						throw new MMAX2ExporterException("Ambiguous macthing confitions '"+validated+"' and '"+matchCondition+"' have both matched '"+
+								sNodeType+"/"+attributeNameSpace+"/"+attributeName+"/"+attributeValue+"'");
+					}
+					validated = matchCondition;
+				}
+			}
+		}
+
+		if(validated == null){
+			ArrayList<MatchCondition> generalConditions = this.conditions.get("All");
+			for(MatchCondition matchCondition: generalConditions){
+				if(matchCondition.isMatched(attributeNameSpace, attributeName, attributeValue,sLayers)){
+					if(validated != null){
+						throw new MMAX2ExporterException("Ambiguous matching confitions '"+validated+"' and '"+matchCondition+"' have both matched '"+
+								sNodeType+"/"+attributeNameSpace+"/"+attributeName+"/"+attributeValue+"'");
+					}
+					validated = matchCondition;
+				}
+			}
+		}
+		
+		System.out.println("Yop => "+sNodeType+" "+validated+"\n");
+		
+		return validated;	
+	}
 }	
+
+
+class MatchCondition{
+	private Pattern attributeNamespacePattern = null;
+	private Pattern attributeNamePattern = null;
+	private Pattern attributeValuePattern = null;
+	private Pattern sLayerNamePattern = null;
+	private String associatedSchemeName;
+	private String associatedAttributeName;
+			
+	public MatchCondition(String attributeNamespacePattern, String attributeNamePattern, String attributeValuePattern, String sLayerNamePattern,
+			String associatedSchemeName, String associatedAttributeName){
+		if(attributeNamespacePattern != null)
+			this.attributeNamespacePattern = Pattern.compile(attributeNamespacePattern);
+		if(attributeNamePattern != null)
+			this.attributeNamePattern = Pattern.compile(attributeNamePattern);
+		if(attributeValuePattern != null)
+			this.attributeValuePattern = Pattern.compile(attributeValuePattern);
+		if(sLayerNamePattern != null)
+			this.sLayerNamePattern = Pattern.compile(sLayerNamePattern);
+		this.associatedSchemeName = associatedSchemeName;
+		this.associatedAttributeName = associatedAttributeName;
+	}
+			
+	public boolean isMatched(String attributeNameSpace, String attributeName, String attributeValue, EList<SLayer> sLayers){
+		boolean answer = true;
+		boolean hasMatchedSomething = false;
+		
+		if(attributeNamespacePattern != null){
+			hasMatchedSomething = true;
+			answer = answer && attributeNamespacePattern.matcher(attributeNameSpace).matches();
+		}
+		
+		if(attributeNamePattern != null){
+			hasMatchedSomething = true;
+			answer = answer && attributeNamePattern.matcher(attributeName).matches();
+		}
+		
+		if(attributeValuePattern != null){
+			hasMatchedSomething = true;
+			answer = answer && attributeValuePattern.matcher(attributeValue).matches();
+		}
+		
+		if((sLayerNamePattern != null) && (sLayers != null)){
+			for(SLayer sLayer: sLayers){
+				hasMatchedSomething = true;
+				answer = answer && sLayerNamePattern.matcher(sLayer.getSName()).matches();
+			}
+		}
+		
+		return hasMatchedSomething && answer;
+	}
+	
+	public String getAssociatedSchemeName(){
+		return this.associatedSchemeName;
+	}
+	
+	public String getAssociatedAttributeName(){
+		return this.associatedAttributeName;
+	}
+	
+	public String toString(){
+		return ((this.attributeNamespacePattern == null)? "":"namespace_regexp = '"+attributeNamespacePattern+"' ")
+				+ ((this.attributeNamePattern == null)? "":"name_regexp = '"+attributeNamePattern+"' ")
+				+ ((this.attributeValuePattern == null)? "":"value_regexp = '"+attributeValuePattern+"' ")
+				+ ((this.sLayerNamePattern == null)? "":"slayer_name_regexp = '"+sLayerNamePattern+"' ")
+				+" => "+this.associatedSchemeName+":"+this.associatedAttributeName;
+	}
+}
+	
+
+	
+	
+	
+	
+
 	
 

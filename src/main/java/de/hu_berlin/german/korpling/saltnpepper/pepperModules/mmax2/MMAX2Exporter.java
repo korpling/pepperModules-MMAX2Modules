@@ -37,6 +37,7 @@ import org.apache.felix.scr.annotations.Service;
 import org.eclipse.emf.common.util.BasicEList;
 import org.eclipse.emf.common.util.EList;
 import org.osgi.service.log.LogService;
+import org.xml.sax.SAXException;
 
 import de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2.Salt2MMAX2Mapper;
 import de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2.SaltExtendedCorpusFactory.SaltExtendedCorpus;
@@ -100,8 +101,7 @@ public class MMAX2Exporter extends PepperExporterImpl implements PepperExporter
 		return numOfParallelDocuments;
 	}	
 	
-	public static final String PROP_VALIDATE_OUTPUT="mmax2Exporter.validateOutput";
-	public static final String PROP_NUM_OF_PARALLEL_DOCUMENTS="mmax2Exporter.numOfParallelDocuments";
+	public static final String PROP_NUM_OF_PARALLEL_DOCUMENTS="MMAX2Exporter.numOfParallelDocuments";
 //===================================== start: thread number
 	
 // ========================== start: flagging for parallel running	
@@ -128,8 +128,9 @@ public class MMAX2Exporter extends PepperExporterImpl implements PepperExporter
 	 */
 	public static final String PROP_RUN_IN_PARALLEL="mmax2Exporter.runInParallel";
 	
-	//public static final String LIMIT_SIZE_NOMINAL_ATTR="mmax2Exporter.limitNominalSetSize";
-	//private int limitNominalSetSize = -1;
+	public static final String MATCHING_CONDITIONS="MMAX2Exporter.matchingConditionsFilePath";
+	
+	private String matchingConditionsFilePath = null;
 	
 // ========================== end: flagging for parallel running
 	/**
@@ -186,6 +187,12 @@ public class MMAX2Exporter extends PepperExporterImpl implements PepperExporter
 					throw new MMAX2ExporterException("Cannot set correct property value of property "+PROP_NUM_OF_PARALLEL_DOCUMENTS+" to "+this.getName()+", because of the value is not castable to Integer. A correct value must be a positiv, whole number (>0).\n Nested exception: "+ e.getMessage());
 				}
 			}
+			
+			if (this.props.containsKey(MATCHING_CONDITIONS))
+			{
+				matchingConditionsFilePath= this.props.getProperty(MATCHING_CONDITIONS);
+				
+			}
 		}//check if flag for running in parallel is set
 	}
 	
@@ -222,7 +229,16 @@ public class MMAX2Exporter extends PepperExporterImpl implements PepperExporter
 			throw new MMAX2ExporterException(e.getMessage());
 			
 		}
-		Salt2MMAX2Mapper mapperCorpus = new Salt2MMAX2Mapper(documentBuilder);
+		Salt2MMAX2Mapper mapperCorpus;
+		try {
+			mapperCorpus = new Salt2MMAX2Mapper(documentBuilder,matchingConditionsFilePath);
+		} catch (SAXException e) {
+			e.printStackTrace();
+			throw new MMAX2ExporterException(e.getMessage());
+		} catch (IOException e) {
+			e.printStackTrace();
+			throw new MMAX2ExporterException(e.getMessage());
+		}
 			
 		if (this.getLogService()!= null)
 			mapperCorpus.setLogService(this.getLogService());
@@ -300,7 +316,7 @@ public class MMAX2Exporter extends PepperExporterImpl implements PepperExporter
 				try{//configure mapper and mapper runner
 					DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
 					mapperRunner.documentFactory = new SaltExtendedDocumentFactory(corpus,documentBuilder);
-					mapperRunner.mapper= new Salt2MMAX2Mapper(documentBuilder);
+					mapperRunner.mapper= new Salt2MMAX2Mapper(documentBuilder,matchingConditionsFilePath);
 					if (this.getLogService()!= null)
 						mapperRunner.mapper.setLogService(this.getLogService());
 					mapperRunner.sDocumentId= sElementId;
@@ -315,9 +331,15 @@ public class MMAX2Exporter extends PepperExporterImpl implements PepperExporter
 					{//do not run import in parallel
 						mapperRunner.start();
 					}//do not run import in parallel
-				} catch (ParserConfigurationException e) {
+				} catch (Exception e) {
 					e.printStackTrace();
-				}
+					if (getLogService()!= null)
+					{
+						getLogService().log(LogService.LOG_ERROR, "Cannot export the SDocument '"+sElementId+"'. The reason is: "+e);
+					}
+					getPepperModuleController().finish(sElementId);
+				} 
+				
 			}//mapping SDocument
 		}//only if given sElementId belongs to an object of type SDocument or SCorpus
 	}

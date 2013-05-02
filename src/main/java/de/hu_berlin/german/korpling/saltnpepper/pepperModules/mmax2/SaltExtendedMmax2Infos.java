@@ -27,6 +27,7 @@ public class SaltExtendedMmax2Infos extends Mmax2Infos {
 	public static final String SALT_INFO_TYPE_SDOMINANCE_REL = "SDominanceRel";
 	public static final String SALT_INFO_TYPE_SPOINTING_REL = "SPointingRel";
 	public static final String SALT_INFO_TYPE_SANNOTATION = "SAnnotation";
+	public static final String SALT_INFO_TYPE_SCONTAINER = "SContainer";
 	public static final String SALT_INFO_TYPE_SMETAANNOTATION = "SMetaAnnotation";
 	public static final String SALT_INFO_TYPE_SLAYER_LINK = "SLayer_link";	
 	public static final String SALT_INFO_TYPE_STYPE_LINK = "SType_link";	
