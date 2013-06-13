@@ -1,20 +1,3 @@
-/**
- * Copyright 2009 Humboldt University of Berlin, INRIA.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *       http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- *
- */
 package de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2;
 
 import java.io.File;
@@ -187,7 +170,7 @@ public class MMAX2Importer extends PepperImporterImpl implements PepperImporter
 			
 			String currentPath = corpusUri.toFileString();
 			this.corpusPath = new File(currentPath);
-			this.corpus = factory.getCorpusBase(corpusUri.toFileString()) ;
+			this.corpus = factory.getCorpus(corpusUri.toFileString()) ;
 			
 			sCorpus.setSName(this.corpusPath.getName());
 			SElementId sCorpusId= SaltCommonFactory.eINSTANCE.createSElementId();
@@ -213,13 +196,6 @@ public class MMAX2Importer extends PepperImporterImpl implements PepperImporter
 				
 				SDocumentGraph sDocumentGraph = SaltCommonFactory.eINSTANCE.createSDocumentGraph();
 				sDocument.setSDocumentGraph(sDocumentGraph);
-				
-				//SCorpusDocumentRelation sCorpDocRel= SaltCommonFactory.eINSTANCE.createSCorpusDocumentRelation();
-				//sCorpDocRel.setSDocument(sDocument);
-				//sCorpDocRel.setSCorpus(sCorpus);
-				//this.sCorpusGraph.addSRelation(sCorpDocRel);
-
-				//corpus.addDocument(documentFactory.getNewDocument(documentId,new File(markablesPath),currentFile));		
 			}
 		} catch (Exception exception) {
 			if (getLogService()!= null)
@@ -275,40 +251,6 @@ public class MMAX2Importer extends PepperImporterImpl implements PepperImporter
 	 */
 	private ExecutorService executorService= null;
 	
-	/**
-	 * If this method is not really implemented, it will call the Method start(sElementId) for every document 
-	 * and corpus, which shall be processed. If it is not really implemented, the method-call will be serial and
-	 * and not parallel. To implement a parallelization override this method and take care, that your code is
-	 * thread-safe. 
-	 * For getting an impression how to implement this method, here is a snipplet of super class 
-	 * PepperImporter of this method:
-	 * <br/>
-	 * boolean isStart= true;
-	 * SElementId sElementId= null;
-	 * while ((isStart) || (sElementId!= null))
-	 * {	
-	 *  isStart= false;
-	 *		sElementId= this.getPepperModuleController().get();
-	 *		if (sElementId== null)
-	 *			break;
-	 *		
-	 *		//call for using push-method
-	 *		this.start(sElementId);
-	 *		
-	 *		if (this.returningMode== RETURNING_MODE.PUT)
-	 *		{	
-	 *			this.getPepperModuleController().put(sElementId);
-	 *		}
-	 *		else if (this.returningMode== RETURNING_MODE.FINISH)
-	 *		{	
-	 *			this.getPepperModuleController().finish(sElementId);
-	 *		}
-	 *		else 
-	 *			throw new PepperModuleException("An error occurs in this module (name: "+this.getName()+"). The returningMode isn�t correctly set (it�s "+this.getReturningMode()+"). Please contact module supplier.");
-	 *		this.end();
-	 *	}
-	 * After all documents were processed this method of super class will call the method end().
-	 */
 	@Override
 	public void start() throws PepperModuleException
 	{
@@ -452,6 +394,7 @@ public class MMAX2Importer extends PepperImporterImpl implements PepperImporter
 			SaltExtendedDocument document;
 			try {
 				document = documentFactory.getNewDocument(sDocument.getSName());
+				System.out.println("Document Id"+sDocument.getSName());
 				this.mapper.mapSDocument(document,this.sDocument);				
 				getPepperModuleController().put(this.sDocument.getSElementId());
 			} catch (Exception exception) {

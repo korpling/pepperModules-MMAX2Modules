@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
+import javax.jws.soap.SOAPBinding.Style;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -19,23 +20,50 @@ import eurac.commul.annotations.mmax2wrapper.MarkableFactory;
 import eurac.commul.annotations.mmax2wrapper.SchemeFactory.MarkableAttributeFactory.MarkableAttribute;
 import eurac.commul.annotations.mmax2wrapper.SchemeFactory.Scheme;
 
-
+/**
+ * @author Lionel Nicolas
+ */
 public class SaltExtendedMarkableFactory extends MarkableFactory{
 	
+	/**
+	 * Simple constructor => no Xml parsing required
+	 * @param scheme The scheme that the Markable produced by this factory should respect
+	 */
 	public SaltExtendedMarkableFactory(Scheme scheme){
 		super(scheme);
 	}
 	
-	public SaltExtendedMarkableFactory(Scheme scheme,DocumentBuilder documentBuilder){
+	/**
+	 * Full constructor => Xml parsing required 
+	 * @param scheme The scheme that the Markable produced by this factory should respect
+	 * @param documentBuilder The Xml parser to use for parsing Xml files
+	 */
+	public SaltExtendedMarkableFactory(Scheme scheme, DocumentBuilder documentBuilder){
 		super(scheme,documentBuilder);
 	}
-	
-	public ArrayList<SaltExtendedMarkable> getSaltExtendedMarkables(String documentId, File markablesPath, Hashtable<String,Hashtable<String,String>> saltInfos) throws IOException, SAXException, ParserConfigurationException, MMAX2WrapperException {
+		
+
+	/** 
+	 * Parses the markables of a document and builds accordingly all SaltExtendedMarkables objects
+	 * @param documentId The id of the document
+	 * @param saltInfos The Salt informations associated with the document
+	 * @return The SaltExtendedMarkables objects of a document
+	 * @throws SAXException
+	 * @throws IOException
+	 * @throws MMAX2WrapperException
+	 */
+	ArrayList<SaltExtendedMarkable> getSaltExtendedMarkables(String documentId, Hashtable<String,Hashtable<String,String>> saltInfos) throws SAXException, IOException, MMAX2WrapperException {
 		ArrayList<SaltExtendedMarkable> results = new ArrayList<SaltExtendedMarkable>();
-		for(Markable markable : super.getMarkables(documentId,markablesPath)){
+		for(Markable markable : super.getMarkables(documentId)){
 			if(saltInfos.containsKey(markable.getId())){
 				Hashtable<String,String> saltInfoMarkable = saltInfos.get(markable.getId());
-				results.add(new SaltExtendedMarkable(this,markable.getId(), markable.getSpan(), markable.getAttributes(), saltInfoMarkable.get("SType"),saltInfoMarkable.get("SName"), saltInfoMarkable.get("SId")));	
+				if(!saltInfoMarkable.get("SType").equals("SContainer")){			
+					results.add(newMarkable(markable.getId(), markable.getSpan(), markable.getAttributes(), 
+							saltInfoMarkable.get("SType"),saltInfoMarkable.get("SName"), saltInfoMarkable.get("SId")));	
+				}else{
+					results.add(new SaltExtendedMarkableContainer(this, markable.getId(), markable.getSpan(), markable.getAttributes(), 
+							saltInfoMarkable.get("SType"),saltInfoMarkable.get("SName"), saltInfoMarkable.get("SId"), saltInfoMarkable.get("ContainedId")));	
+				}
 			}else{
 				results.add(new SaltExtendedMarkable(this,markable.getId(), markable.getSpan(), markable.getAttributes()));
 			}
@@ -43,19 +71,54 @@ public class SaltExtendedMarkableFactory extends MarkableFactory{
 		return results;	
 	}
 	
+	
+	/**
+	 * Creates a new SaltExtendedMarkable
+	 * @param id The Mmax2 id 
+	 * @param span The Mmax2 Span
+	 * @param attributes The Mmax2 Attributes
+	 * @param sType The Salt type
+	 * @param sName The Salt name
+	 * @param sId The Salt id
+	 * @return A new SaltExtendedMarkable
+	 */
 	public SaltExtendedMarkable newMarkable(String id, String span, ArrayList<MarkableAttribute> attributes, String sType, String sName, String sId){
 		return new SaltExtendedMarkable(this, id, span, attributes, sType, sName, sId);
 	}
 	
+	/**
+	 * Creates a new SaltExtendedMarkableContainer
+	 * @param id The Mmax2 id 
+	 * @param span The Mmax2 Span
+	 * @param attributes The Mmax2 Attributes
+	 * @param sType The Salt type
+	 * @param sName The Salt name
+	 * @param sId The Salt id
+	 * @param Mmax Id of the markable for which the SContainer is an alias
+	 * @return A new SaltExtendedMarkable that is in reality a SaltExtendedMarkableContainer
+	 */
+	public SaltExtendedMarkable newMarkableContainer(String id, String span, ArrayList<MarkableAttribute> attributes, String sType, String sName, String sId, String containedId){
+		return new SaltExtendedMarkableContainer(this, id, span, attributes, sType, sName, sId, containedId);
+	}
+	
+	/**
+	 * This class models a Markable enhanced with Salt information
+	 * @author Lionel Nicolas
+	 *
+	 */
+	
 	public class SaltExtendedMarkable extends Markable {
-		private boolean hasSaltInformation;
-		private String sId;
-		private String sType;
-		private String sName;
+		private boolean hasSaltInformation; // A boolean to know if the SAltExtendedMArkable already has SAlt informations
+		private String sId; // The Salt Id if any
+		private String sType; // The Salt type if any
+		private String sName; // The Salt name if any 
 		
 		protected SaltExtendedMarkable(SaltExtendedMarkableFactory factory, String id, String span, ArrayList<MarkableAttribute> attributes){
 			super(factory,id,span,attributes);
 			this.hasSaltInformation = false;
+			this.sId = "";
+			this.sType = "";
+			this.sName = "";
 		}
 		
 		protected SaltExtendedMarkable(SaltExtendedMarkableFactory factory, String id, String span, ArrayList<MarkableAttribute> attributes, String sType, String sName, String sId){
@@ -66,20 +129,59 @@ public class SaltExtendedMarkableFactory extends MarkableFactory{
 			this.sId = sId;
 		}
 		
+		/**
+		 * Returns the Salt name
+		 * @return The Salt name
+		 */
 		public String getSName() {
 			return this.sName;
 		}
 		
+		/**
+		 * Returns the Salt type
+		 * @return The Salt type
+		 */
 		public String getSType() {
 			return sType;
 		}
 		
+		/**
+		 * Returns the Salt Id
+		 * @return The Salt Id
+		 */
 		public String getSId() {
 			return sId;
 		}
 		
+		/**
+		 * Tells if the SaltExtendedMarkable is a proper one or a Markable mapped into a  SaltExtendedMarkable
+		 * @return A boolean value that indicates if the SaltExtendedMarkable is a proper one.
+		 */
 		public boolean hasSaltInformation() {
 			return this.hasSaltInformation;
+		}
+	}
+	
+	/**
+	 * This class models the container markable that are used to map data at export.
+	 * @author Lionel Nicolas
+	 *
+	 */
+	public class SaltExtendedMarkableContainer extends SaltExtendedMarkable{
+		private String containedId;
+		
+		protected SaltExtendedMarkableContainer(SaltExtendedMarkableFactory factory, String id, String span, ArrayList<MarkableAttribute> attributes, String sType, String sName, String sId, String containedId){
+			super(factory,id,span,attributes,sType,sName,sId);
+			this.containedId = containedId;
+		}
+			
+		
+		/**
+		 * Returns the Id of the markable that has been mapped in the container
+		 * @return The Id of the markable that has been mapped in the container
+		 */
+		public String getContainedId(){
+			return this.containedId;
 		}
 	}
 }

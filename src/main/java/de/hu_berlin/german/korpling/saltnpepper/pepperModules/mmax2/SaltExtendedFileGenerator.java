@@ -12,42 +12,41 @@ import org.apache.commons.lang3.StringUtils;
 import de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2.SaltExtendedCorpusFactory.SaltExtendedCorpus;
 import de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2.SaltExtendedDocumentFactory.SaltExtendedDocument;
 import de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2.SaltExtendedMarkableFactory.SaltExtendedMarkable;
+import de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2.SaltExtendedMarkableFactory.SaltExtendedMarkableContainer;
 import de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2.exceptions.MMAX2ExporterException;
 import eurac.commul.annotations.mmax2wrapper.FileGenerator;
 import eurac.commul.annotations.mmax2wrapper.MMAX2WrapperException;
 import eurac.commul.annotations.mmax2wrapper.SchemeFactory.Scheme;
 
-
+/**
+ * This class aims at dealing with the outputting to files of a Mmax Corpus enhanced with Salt information
+ * @author Lionel Nicolas
+ */
 public class SaltExtendedFileGenerator extends FileGenerator {
 	
-	
-	public static void createCorpus(SaltExtendedCorpus corpus, String ressourcePath) throws MMAX2WrapperException, IOException, ParserConfigurationException
-	{   
-		createCorpus_t(corpus, ressourcePath);
+	/**
+	 * Outputs the SaltExtended corpus to the folders contained in its internal variables
+	 * @param corpus The corpus to output
+	 * @param ressourcePath The path where to find files required by mmax2 such as the markables.dtd etc. 
+	 * @throws MMAX2WrapperException
+	 * @throws IOException
+	 * @throws ParserConfigurationException
+	 */
+	public static void createCorpus(SaltExtendedCorpus corpus, String ressourcePath) throws IOException, ParserConfigurationException, MMAX2WrapperException {   
+		FileGenerator.createCorpus(corpus, ressourcePath);
 		
 		File saltInfosDirectory = corpus.getSaltInfoPath();
 		if (!saltInfosDirectory.mkdirs()){ 
 			throw new MMAX2ExporterException("Cannot create folder for SaltInfo '"+saltInfosDirectory.getAbsolutePath()+"'");
 		}
 		
-		
-		ArrayList<Scheme> schemes = corpus.getSchemes();
-		
 		for(SaltExtendedDocument document: corpus.getSaltExtendedDocuments()){
-			createWordsFile(document);
 			createSaltInfoFile(document);
-			createDocumentFile(document);
-			
-			for(Scheme scheme: schemes){
-				createMarkableFile(document, scheme);
-				
-			}
 		}
 	}
 	
-	
-	public static void createSaltInfoFile(SaltExtendedDocument document) throws IOException, MMAX2WrapperException, ParserConfigurationException{
-		OutputXmlFile(document.getCorpus().getSaltInfoPath().getAbsolutePath() + File.separator + document.getDocumentId() + SaltExtendedMmax2Infos.SALT_INFO_FILE_ENDING,
+	private static void createSaltInfoFile(SaltExtendedDocument document) throws IOException, MMAX2WrapperException{
+		OutputXmlFile(document.getFactory().getCorpus().getSaltInfoPath().getAbsolutePath() + File.separator + document.getDocumentId() + SaltExtendedMmax2Infos.SALT_INFO_FILE_ENDING,
 				createSaltInfoFileString(document));
 	}
 	
@@ -57,7 +56,8 @@ public class SaltExtendedFileGenerator extends FileGenerator {
 	+"<"+ SaltExtendedMmax2Infos.SALT_INFOS_NODE_NAME+">" + "\n"
 	+"	@salt_infos@" + "\n"
 	+"</"+ SaltExtendedMmax2Infos.SALT_INFOS_NODE_NAME+">";
-			
+	
+	//Generates the entire content of the SAltInfo File corresponding to the SaltExtendedDocument document
 	private static String createSaltInfoFileString(SaltExtendedDocument document) throws MMAX2WrapperException{
 		String cpy = MMAX2_SALT_INFO_GENERIC + "";
 		
@@ -70,24 +70,35 @@ public class SaltExtendedFileGenerator extends FileGenerator {
 		
 		return cpy;
 	}
-			
+	
+	
 	private static final String MMAX2_SALT_INFO_ENTRY_GENERIC =
 	 "	<"+ SaltExtendedMmax2Infos.SALT_INFO_NODE_NAME+" "
 			 +SaltExtendedMmax2Infos.SALT_INFO_ID_ATTR_NAME+"=\"@markable_id@\" "
 			 +SaltExtendedMmax2Infos.SALT_INFO_SID_ATTR_NAME+"=\"@salt_id@\" "
 			 +SaltExtendedMmax2Infos.SALT_INFO_STYPE_ATTR_NAME+"=\"@salt_type@\" "
-			 +SaltExtendedMmax2Infos.SALT_INFO_SNAME_ATTR_NAME+"=\"@salt_name@\"/>";
-			
+			 +SaltExtendedMmax2Infos.SALT_INFO_SNAME_ATTR_NAME+"=\"@salt_name@\" @additional@/>";
+	
+	//Generates an entry of the SAltInfo File for the SaltExtendedMarkable markable
 	private static String createSaltInfoEntry(SaltExtendedMarkable markable) throws MMAX2WrapperException{
 		String cpy = MMAX2_SALT_INFO_ENTRY_GENERIC + "";
 		cpy = cpy.replaceAll("@markable_id@", EscapeString(markable.getId()));
 		cpy = cpy.replaceAll("@salt_id@", EscapeString(markable.getSId()));
 		cpy = cpy.replaceAll("@salt_type@", EscapeString(markable.getSType()));
 		cpy = cpy.replaceAll("@salt_name@", EscapeString(markable.getSName()));
+		if(markable.getSType().equals(SaltExtendedMmax2Infos.SALT_INFO_TYPE_SCONTAINER)){
+			SaltExtendedMarkableContainer containerMarkable = (SaltExtendedMarkableContainer) markable;
+			cpy = cpy.replaceAll("@additional@",SaltExtendedMmax2Infos.SALT_INFO_CONTAINED_ID_ATTR_NAME+"=\""+
+					EscapeString(containerMarkable.getContainedId())+"\" ");
+		}else{
+			cpy = cpy.replaceAll("@additional@", "");
+		}
 		
 		return cpy;
 	}
 	
+	
+	// some useful methods to avoid outputting non-proper Xml files
 	protected static String EscapeString(String original) throws MMAX2WrapperException{
 		String copy = original+"";
 		return  EscapeStringSimple(StringEscapeUtils.escapeXml(copy));		
@@ -102,7 +113,7 @@ public class SaltExtendedFileGenerator extends FileGenerator {
 		if(copy.matches(prohibed_regexp)){
 			throw new MMAX2ExporterException("'"+copy+"' contains one of the following reserved @argument@ ("+prohibed_arguments+")");	
 		}		
-		return  FileGenerator.EscapeStringSimple(copy);
+		return  FileGenerator.EscapeStringSimple(copy);// if good at this level then check upstairs
 	}
 
 	
