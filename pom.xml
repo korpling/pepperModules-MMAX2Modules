@@ -46,13 +46,13 @@
 			<artifactId>commons-lang3</artifactId>
 			<version>3.0</version>
 		</dependency>
-        <dependency>
+	    <dependency>
 			<groupId>eurac.commul.annotations.mmax2wrapper</groupId>
 			<artifactId>mmax2wrapper</artifactId>
 			<version>1.0</version>
 			<scope>system</scope>
 			<type>jar</type>
-			<systemPath>/home/mush/workspace/mmax2wrapper/mmax2wrapper.jar</systemPath>
+			<systemPath>/home/mush/workspace/pepperModules-PAULAModules/lib/mmax2wrapper.jar</systemPath>
 		</dependency>
 	</dependencies>
 	
