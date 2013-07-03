@@ -5,16 +5,15 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.ParserConfigurationException;
 
 import org.xml.sax.SAXException;
 
 import de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2.SaltExtendedDocumentFactory.SaltExtendedDocument;
+import de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2.exceptions.SaltExtendedMMAX2WrapperException;
 import eurac.commul.annotations.mmax2wrapper.CorpusFactory;
-import eurac.commul.annotations.mmax2wrapper.Mmax2Infos;
-import eurac.commul.annotations.mmax2wrapper.CorpusFactory.Corpus;
 import eurac.commul.annotations.mmax2wrapper.DocumentFactory.Document;
 import eurac.commul.annotations.mmax2wrapper.MMAX2WrapperException;
+import eurac.commul.annotations.mmax2wrapper.Mmax2Infos;
 import eurac.commul.annotations.mmax2wrapper.SchemeFactory.Scheme;
 
 /**
@@ -45,6 +44,8 @@ public class SaltExtendedCorpusFactory extends CorpusFactory{
 	 *  @return a SaltExtendedCorpus representing the corpus parsed 
 	 */
 	public SaltExtendedCorpus getCorpus(String path) throws SAXException, IOException, MMAX2WrapperException{
+		if (path== null)
+			throw new SaltExtendedMMAX2WrapperException("Path to corpus was not found.");
 		Corpus baseCorpus = super.getCorpus(path);
 		String saltInfoPath = path + File.separator + SaltExtendedMmax2Infos.SALT_INFO_FOLDER;
 
