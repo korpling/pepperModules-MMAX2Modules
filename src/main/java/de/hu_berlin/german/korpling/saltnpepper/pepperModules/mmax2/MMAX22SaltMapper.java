@@ -188,6 +188,9 @@ public class MMAX22SaltMapper
 					markableOfScheme = new ArrayList<SaltExtendedMarkable>();
 					newMarkables.put(markable.getFactory().getScheme(), markableOfScheme);
 				}
+				//if(markable.getFactory().getScheme().getName().equals("groups")){
+					
+				//}
 				markableOfScheme.add(markable);				
 			}else{ // markables originally produced (exported) from SAlt
 				String sType = markable.getSType();
@@ -292,7 +295,6 @@ public class MMAX22SaltMapper
 		
 		
 		/* Creating new SSpans */
-		
 		SLayer mmaxSLayer = null;
 		if(newMarkables.keySet().size() != 0){ // => means "new Markables created since export from salt"
 			for(SLayer sLayer: this.SLayerHash.values()){
@@ -310,6 +312,7 @@ public class MMAX22SaltMapper
 		
 			for(Scheme scheme: newMarkables.keySet()){
 				String schemeName = scheme.getName();
+			
 				for(SaltExtendedMarkable markable: newMarkables.get(scheme)){
 					SSpan sSpan = SaltCommonFactory.eINSTANCE.createSSpan();
 					sSpan.setSName(schemeName);
@@ -388,20 +391,26 @@ public class MMAX22SaltMapper
 							sAnnotation.setSValue(value);
 							sSpan.addSAnnotation(sAnnotation);
 						}else if(attributeType.equals(MarkablePointerAttributeFactory.pointerType)){ 
-							SPointingRelation sPointingRelation = SaltCommonFactory.eINSTANCE.createSPointingRelation();
-							sPointingRelation.setSName(markableAttribute.getName());
-							
-							sDocumentGraph.addSRelation(sPointingRelation);
-							sPointingRelation.addSType(markableAttribute.getName());
-							
-							sPointingRelation.setSSource(sSpan);
-							SNode sTarget = getSNode(markableAttribute.getValue());
-							if(sTarget == null)
-								dataCorrupted("An unknown markable is referenced as the target of the pointer '"+markableAttribute.getName()+"' within markable '"+markable+"'");
-							sPointingRelation.setSTarget(sTarget);
-							
-							mmaxSLayer.getSRelations().add(sPointingRelation);
-							sPointingRelation.getSLayers().add(mmaxSLayer);
+							if(!markableAttribute.getValue().equals("empty")){
+								String[] values = markableAttribute.getValue().split(";");
+								
+								for(int i = 0; i< values.length; i++){
+									SPointingRelation sPointingRelation = SaltCommonFactory.eINSTANCE.createSPointingRelation();
+									sPointingRelation.setSName(markableAttribute.getName());
+									
+									sDocumentGraph.addSRelation(sPointingRelation);
+									sPointingRelation.addSType(markableAttribute.getName());
+									
+									sPointingRelation.setSSource(sSpan);
+									String value_i = values[i];
+									SNode sTarget = getSNode(value_i);
+									if(sTarget == null)
+										dataCorrupted("An unknown markable is referenced as the target of the pointer '"+markableAttribute.getName()+"' within markable '"+markable+"'");
+									sPointingRelation.setSTarget(sTarget);
+									mmaxSLayer.getSRelations().add(sPointingRelation);
+									sPointingRelation.getSLayers().add(mmaxSLayer);
+								}
+							}
 						}else{
 							throw new MMAX2ImporterException("Developper error: unknown type of markable attribute '"+attributeType+"'...");
 						}		
@@ -713,10 +722,12 @@ public class MMAX22SaltMapper
 			sTargetMarkable.removeAttribute(keyPointer);
 		}
 		
-		SNode sTarget = getSNode(keyPointer.getValue());
-		if(sTarget == null)
-			dataCorrupted("An unknown target node is referenced as the target for the SPointingRelation represented by markable '"+markable+"'");	
-		sPointingRelation.setSTarget(sTarget);	
+		if(keyPointer.getValue().equals("empty")){
+			SNode sTarget = getSNode(keyPointer.getValue());
+			if(sTarget == null)
+				dataCorrupted("An unknown target node is referenced as the target for the SPointingRelation represented by markable '"+markable+"'");	
+			sPointingRelation.setSTarget(sTarget);	
+		}
 	}
 	
 	// method to handle exported SMetaAnnotation

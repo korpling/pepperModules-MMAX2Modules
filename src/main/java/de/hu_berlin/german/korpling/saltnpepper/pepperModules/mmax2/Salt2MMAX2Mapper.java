@@ -664,7 +664,10 @@ public class Salt2MMAX2Mapper
 	// the mapping is done below
 	private SaltExtendedMarkable mapPointingRelation(SPointingRelation pointRel) throws MMAX2WrapperException{
 		SaltExtendedMarkable sourceMarkable = getSNodeMarkable(pointRel.getSSource());
-		SaltExtendedMarkable targetMarkable = getSNodeMarkable(pointRel.getSTarget());
+		SaltExtendedMarkable targetMarkable = null;
+		if(pointRel.getSTarget() != null){
+			targetMarkable = getSNodeMarkable(pointRel.getSTarget());
+		}
 	
 		String markableId = getNewId();
 		String markableSPan = sourceMarkable.getSpan();
@@ -674,21 +677,30 @@ public class Salt2MMAX2Mapper
 		PointerMatchCondition validated = matchSRelation(SaltExtendedMmax2Infos.SALT_INFO_TYPE_SPOINTING_REL,pointRel.getSTypes(), pointRel.getSLayers());
 		if(validated == null){		
 			addFreetextAttribute(markable,SaltExtendedMmax2Infos.SALT_INFO_TYPE_SPOINTING_REL,"source",sourceMarkable.getId());
-			addFreetextAttribute(markable,SaltExtendedMmax2Infos.SALT_INFO_TYPE_SPOINTING_REL,"target",targetMarkable.getId());
+			if(targetMarkable != null){
+				addFreetextAttribute(markable,SaltExtendedMmax2Infos.SALT_INFO_TYPE_SPOINTING_REL,"target",targetMarkable.getId());
+			}else{
+				addFreetextAttribute(markable,SaltExtendedMmax2Infos.SALT_INFO_TYPE_SPOINTING_REL,"target","empty");	
+			}
 		}else{
 			SaltExtendedMarkable containerSourceMarkable = getSContainerMarkable(sourceMarkable,validated.getSourceAssociatedSchemeName(),
 					sourceMarkable.getSpan(),sourceMarkable.getSName(),sourceMarkable.getSId(),sourceMarkable.getId());
 			
-			SaltExtendedMarkable containerTargetMarkable = getSContainerMarkable(targetMarkable,validated.getTargetAssociatedSchemeName(),
-					targetMarkable.getSpan(),targetMarkable.getSName(),targetMarkable.getSId(),targetMarkable.getId());
-			
 			addFreetextAttribute(markable, SaltExtendedMmax2Infos.SALT_INFO_TYPE_SPOINTING_REL,
 					CONTAINER_POINTER_ATTR_NAME, validated.getPointedAssociatedAttributeName());
 			
-			addPointerAttribute(containerSourceMarkable, validated.getSourceAssociatedSchemeName(), validated.getTargetAssociatedSchemeName(), 
-					validated.getPointedAssociatedAttributeName(), containerTargetMarkable.getId());
-		
 			addFreetextAttribute(markable,SaltExtendedMmax2Infos.SALT_INFO_TYPE_SPOINTING_REL,"source",containerSourceMarkable.getId());
+			
+			if(targetMarkable != null){
+				SaltExtendedMarkable containerTargetMarkable = getSContainerMarkable(targetMarkable,validated.getTargetAssociatedSchemeName(),
+						targetMarkable.getSpan(),targetMarkable.getSName(),targetMarkable.getSId(),targetMarkable.getId());
+			
+				addPointerAttribute(containerSourceMarkable, validated.getSourceAssociatedSchemeName(), validated.getTargetAssociatedSchemeName(), 
+						validated.getPointedAssociatedAttributeName(), containerTargetMarkable.getId());
+			}else{
+				addPointerAttribute(containerSourceMarkable, validated.getSourceAssociatedSchemeName(), validated.getTargetAssociatedSchemeName(), 
+						validated.getPointedAssociatedAttributeName(), "empty");
+			}
 		}
 		
 		return markable;
@@ -892,7 +904,7 @@ public class Salt2MMAX2Mapper
 	private Scheme getScheme(String schemeName){
 		Scheme scheme = this.corpus.getScheme(schemeName);
 		if(scheme == null){
-			scheme = this.schemeFactory.newScheme(schemeName,false); 
+			scheme = this.schemeFactory.newScheme(schemeName); 
 			this.corpus.addScheme(scheme);
 		}		
 		return scheme;
@@ -918,7 +930,6 @@ public class Salt2MMAX2Mapper
 		SaltExtendedMarkable containerMarkable = null;
 		
 		Scheme associatedScheme = getScheme(schemeName);
-		associatedScheme.setActive(true);
 		if(!associatedMarkables.containsKey(associatedScheme)){
 			SaltExtendedMarkableFactory markableFactory = this.document.getFactory().getMarkableFactory(associatedScheme);
 			if(markableFactory == null){
