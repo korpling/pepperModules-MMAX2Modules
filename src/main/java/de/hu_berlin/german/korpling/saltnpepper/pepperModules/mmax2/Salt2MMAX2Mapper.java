@@ -879,8 +879,8 @@ public class Salt2MMAX2Mapper
 			SaltExtendedMarkable linkMarkable = getMarkable(scheme,getNewId(),markable.getSpan(),SaltExtendedMmax2Infos.SALT_INFO_TYPE_SLAYER_LINK,markable.getSName(),markable.getSId());
 			SaltExtendedMarkable sLayerMarkable = this.registeredSLayerMarkables.get(sLayer);
 			
-			addPointerAttribute(linkMarkable,schemeName,markableSKind,"SElement",markable.getId());
-			addPointerAttribute(linkMarkable,schemeName,SaltExtendedMmax2Infos.SALT_INFO_TYPE_SLAYER,"SLayer",sLayerMarkable.getId());
+			addPointerAttribute(linkMarkable,schemeName,markableSKind,"selement",markable.getId());
+			addPointerAttribute(linkMarkable,schemeName,SaltExtendedMmax2Infos.SALT_INFO_TYPE_SLAYER,"slayer",sLayerMarkable.getId());
 			document.addMarkable(linkMarkable);
 		}
 	}
@@ -892,8 +892,8 @@ public class Salt2MMAX2Mapper
 		for(String sType: sTypes){
 			SaltExtendedMarkable linkMarkable = getMarkable(scheme,getNewId(),markable.getSpan(),SaltExtendedMmax2Infos.SALT_INFO_TYPE_STYPE_LINK,markable.getSName(),markable.getSId());
 			
-			addPointerAttribute(linkMarkable,schemeName,markableSKind,"SElement",markable.getId());
-			addFreetextAttribute(linkMarkable,schemeName,"SType",sType);
+			addPointerAttribute(linkMarkable,schemeName,markableSKind,"selement",markable.getId());
+			addFreetextAttribute(linkMarkable,schemeName,"stype",sType);
 			
 			this.document.addMarkable(linkMarkable);
 		}

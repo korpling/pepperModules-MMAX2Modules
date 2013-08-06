@@ -392,7 +392,6 @@ public class MMAX2Importer extends PepperImporterImpl implements PepperImporter
 			SaltExtendedDocument document;
 			try {
 				document = documentFactory.getNewDocument(sDocument.getSName());
-				System.out.println("Document Id"+sDocument.getSName());
 				this.mapper.mapSDocument(document,this.sDocument);				
 				getPepperModuleController().put(this.sDocument.getSElementId());
 			} catch (Exception exception) {
@@ -403,7 +402,6 @@ public class MMAX2Importer extends PepperImporterImpl implements PepperImporter
 				exception.printStackTrace();				
 				getPepperModuleController().finish(this.sDocument.getSElementId());	
 			}
-			
 						
 			mapper= null;
 			this.lock.lock();
