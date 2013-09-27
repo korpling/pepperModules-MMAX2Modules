@@ -148,13 +148,9 @@ public class MMAX22SaltMapper
 			}
 		}
 		
-		if(bufferBaseDataUnit.size() != 0){
-			if(lastTextualDsMarkable != null){
-				sTextualDSBaseDataUnits.get(lastTextualDsMarkable).addAll(bufferBaseDataUnit);
-			}else{
-				createSTextualDS(sDocumentGraph,null,bufferBaseDataUnit,indicesTokens);				
-			}
-		}
+		if((bufferBaseDataUnit.size() != 0) & (lastTextualDsMarkable != null)){
+			sTextualDSBaseDataUnits.get(lastTextualDsMarkable).addAll(bufferBaseDataUnit);
+		}		
 		
 		ArrayList<SSpanningRelation> sSpanRelNodes = new ArrayList<SSpanningRelation>();
 		ArrayList<SaltExtendedMarkable> sSpanRelMarkables = new ArrayList<SaltExtendedMarkable>();
@@ -300,9 +296,14 @@ public class MMAX22SaltMapper
 
 		
 		
+		
+		
 		/* Creating new SSpans */
 		SLayer mmaxSLayer = null;
 		if(newMarkables.keySet().size() != 0){ // => means "new Markables created since export from salt"
+			
+			
+			
 			for(SLayer sLayer: this.SLayerHash.values()){
 				if(sLayer.getSName().equals("Mmax2_SLayer")){
 					mmaxSLayer = sLayer;
@@ -316,6 +317,16 @@ public class MMAX22SaltMapper
 				sDocumentGraph.addSLayer(mmaxSLayer);
 			}
 		
+			if((bufferBaseDataUnit.size() != 0) & (lastTextualDsMarkable == null)){
+				STextualDS newTextualDs = createSTextualDS(sDocumentGraph,null,bufferBaseDataUnit,indicesTokens);	
+				mmaxSLayer.getSNodes().add(newTextualDs);
+				newTextualDs.getSLayers().add(mmaxSLayer);
+				
+				for(BaseDataUnit baseDataUnit: bufferBaseDataUnit){
+					getStoken(baseDataUnit.getId(), indicesTokens);
+				}
+			}
+			
 			for(Scheme scheme: newMarkables.keySet()){
 				String schemeName = scheme.getName();
 			

@@ -635,6 +635,8 @@ public class Salt2MMAX2Mapper
 		return createMarkableForSNode(getNewId(),makeSpan(this.spanStextualDSCorrespondance.get(sTextualDs)),sTextualDs,SaltExtendedMmax2Infos.SALT_INFO_TYPE_STEXTUALDS);
 	}
 	
+	
+	
 	// function specialized in SDominanceRelation information
 	// we start the mapping but finish it in the mapStruct function because we can not create a SStruct before the SDominanceRelation (because if the SStruct mmax2 span)
 	// some informations related to the SSTruct are thus not available when processing the SDominanceRelation
