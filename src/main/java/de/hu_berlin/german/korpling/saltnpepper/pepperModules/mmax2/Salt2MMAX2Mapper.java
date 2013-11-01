@@ -4,17 +4,10 @@ package de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Hashtable;
-import java.util.regex.MatchResult;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.swing.text.html.HTMLDocument.HTMLReader.IsindexAction;
 import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.emf.common.util.BasicEList;
@@ -25,13 +18,10 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import com.sun.org.apache.bcel.internal.generic.DDIV;
-
 import de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2.SaltExtendedCorpusFactory.SaltExtendedCorpus;
 import de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2.SaltExtendedDocumentFactory.SaltExtendedDocument;
 import de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2.SaltExtendedMarkableFactory.SaltExtendedMarkable;
 import de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2.exceptions.MMAX2ExporterException;
-import de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2.exceptions.SaltExtendedMMAX2WrapperException;
 
 import de.hu_berlin.german.korpling.saltnpepper.salt.graph.Edge;
 import de.hu_berlin.german.korpling.saltnpepper.salt.saltCommon.sCorpusStructure.SDocument;
@@ -51,7 +41,6 @@ import de.hu_berlin.german.korpling.saltnpepper.salt.saltCore.SMetaAnnotatableEl
 import de.hu_berlin.german.korpling.saltnpepper.salt.saltCore.SMetaAnnotation;
 import de.hu_berlin.german.korpling.saltnpepper.salt.saltCore.SNode;
 import de.hu_berlin.german.korpling.saltnpepper.salt.saltCore.SRelation;
-import eurac.commul.annotations.mmax2wrapper.CorpusFactory.Corpus;
 import eurac.commul.annotations.mmax2wrapper.MMAX2WrapperException;
 import eurac.commul.annotations.mmax2wrapper.SchemeFactory;
 import eurac.commul.annotations.mmax2wrapper.SchemeFactory.MarkableAttributeFactory;
@@ -106,7 +95,7 @@ public class Salt2MMAX2Mapper
 	private Hashtable<STextualDS,ArrayList<String>> spanStextualDSCorrespondance;
 	private Hashtable<SNode,SaltExtendedMarkable> registeredSNodesMarkables;
 	private Hashtable<SRelation,SaltExtendedMarkable> registeredSRelationsMarkables;
-	private HashMap<SLayer,SaltExtendedMarkable> registeredSLayerMarkables;
+	private Hashtable<SLayer,SaltExtendedMarkable> registeredSLayerMarkables;
 	private DocumentBuilder documentBuilder;
 	
 	private Hashtable<Object,Hashtable<Scheme,SaltExtendedMarkable>> sContainerMarkables;
@@ -193,7 +182,6 @@ public class Salt2MMAX2Mapper
 				}
 				attributes.removeNamedItem(CONTAINER_ATTR_NAME);
 				String attrName = destAttrNode.getNodeValue(); 
-				
 				
 				if(attributes.getLength() != 0){
 					ArrayList<String> unknownAttributes = new ArrayList<String>();
@@ -377,7 +365,7 @@ public class Salt2MMAX2Mapper
 	 * @throws MMAX2ExporterException
 	 * @throws MMAX2WrapperException
 	 */
-	public void mapAllSDocument(SaltExtendedCorpus corpus, SDocument sDocument, SaltExtendedDocumentFactory factory, SchemeFactory schemeFactory) throws MMAX2ExporterException, MMAX2WrapperException 
+	public SaltExtendedDocument mapAllSDocument(SaltExtendedCorpus corpus, SDocument sDocument, SaltExtendedDocumentFactory factory, SchemeFactory schemeFactory) throws MMAX2ExporterException, MMAX2WrapperException 
 	{
 		// this function goes through all pieces of data in a SDocument and launch accordingly the specialized functions below
 		
@@ -386,7 +374,7 @@ public class Salt2MMAX2Mapper
 		this.spanStextualDSCorrespondance = new Hashtable<STextualDS, ArrayList<String>>();
 		this.registeredSNodesMarkables = new Hashtable<SNode, SaltExtendedMarkableFactory.SaltExtendedMarkable>();
 		this.registeredSRelationsMarkables = new Hashtable<SRelation, SaltExtendedMarkableFactory.SaltExtendedMarkable>();
-		this.registeredSLayerMarkables = new HashMap<SLayer, SaltExtendedMarkableFactory.SaltExtendedMarkable>();
+		this.registeredSLayerMarkables = new Hashtable<SLayer, SaltExtendedMarkableFactory.SaltExtendedMarkable>();
 		
 		this.sContainerMarkables = new Hashtable<Object, Hashtable<Scheme,SaltExtendedMarkable>>();
 		
@@ -525,10 +513,9 @@ public class Salt2MMAX2Mapper
 			if(sTypes != null)
 				mapSTypesToMarkable(markable,markable.getFactory().getScheme().getName(),sTypes);
 		}
-		corpus.addDocument(document);
+		//corpus.addDocument(document);
+		return document;	
 	}
-	
-	public void finalizeCorpusStructure(SaltExtendedCorpus corpus, SchemeFactory schemeFactory) throws MMAX2ExporterException{}
 	
 	// function specialized in SDocument information
 	private void mapSDocument(int lastBaseUnitId) throws MMAX2WrapperException{
@@ -731,7 +718,9 @@ public class Salt2MMAX2Mapper
 		SaltExtendedMarkable textualDsMarkable = getSNodeMarkable(sTextualRelation.getSTextualDS());
 		
 		String markableId = getNewId();
+		//System.out.println(sTextualRelation);
 		String markableSPan = makeSpan(this.spanStextualRelationCorrespondance.get(sTextualRelation));
+		
 		tokenMarkable.setSpan(markableSPan);
 		
 		SaltExtendedMarkable markable = createMarkableForSRelation(markableId,markableSPan,sTextualRelation,SaltExtendedMmax2Infos.SALT_INFO_TYPE_STEXTUAL_REL);

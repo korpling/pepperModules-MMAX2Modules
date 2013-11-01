@@ -16,6 +16,8 @@ import de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2.SaltExtended
 import de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2.exceptions.MMAX2ExporterException;
 import eurac.commul.annotations.mmax2wrapper.FileGenerator;
 import eurac.commul.annotations.mmax2wrapper.MMAX2WrapperException;
+import eurac.commul.annotations.mmax2wrapper.CorpusFactory.Corpus;
+import eurac.commul.annotations.mmax2wrapper.DocumentFactory.Document;
 import eurac.commul.annotations.mmax2wrapper.SchemeFactory.Scheme;
 
 /**
@@ -24,26 +26,38 @@ import eurac.commul.annotations.mmax2wrapper.SchemeFactory.Scheme;
  */
 public class SaltExtendedFileGenerator extends FileGenerator {
 	
-	/**
-	 * Outputs the SaltExtended corpus to the folders contained in its internal variables
-	 * @param corpus The corpus to output
-	 * @param ressourcePath The path where to find files required by mmax2 such as the markables.dtd etc. 
-	 * @throws MMAX2WrapperException
-	 * @throws IOException
-	 * @throws ParserConfigurationException
-	 */
-	public static void createCorpus(SaltExtendedCorpus corpus, String ressourcePath) throws IOException, ParserConfigurationException, MMAX2WrapperException {   
-		FileGenerator.createCorpus(corpus, ressourcePath);
-		
+	
+
+	public static void outputCorpus(SaltExtendedCorpus corpus, String ressourcePa) throws IOException, MMAX2WrapperException{
+		initializeCorpus(corpus,ressourcePa);
+		for(SaltExtendedDocument doc: corpus.getSaltExtendedDocuments()){
+			outputDocument(corpus,doc);
+		}
+		finalizeCorpus(corpus);
+	}
+	
+	
+	public static void initializeCorpus(SaltExtendedCorpus corpus, String ressourcePa) throws IOException, MMAX2WrapperException
+	{   
+		FileGenerator.initializeCorpus(corpus, ressourcePa);
 		File saltInfosDirectory = corpus.getSaltInfoPath();
 		if (!saltInfosDirectory.mkdirs()){ 
 			throw new MMAX2ExporterException("Cannot create folder for SaltInfo '"+saltInfosDirectory.getAbsolutePath()+"'");
 		}
-		
-		for(SaltExtendedDocument document: corpus.getSaltExtendedDocuments()){
-			createSaltInfoFile(document);
-		}
 	}
+	
+	
+	public static void finalizeCorpus(SaltExtendedCorpus corpus) throws MMAX2WrapperException, IOException
+	{   
+		FileGenerator.finalizeCorpus(corpus);				
+	}
+	
+	public static void outputDocument(SaltExtendedCorpus corpus, SaltExtendedDocument document) throws MMAX2WrapperException, IOException
+	{   
+		FileGenerator.outputDocument(corpus,document);
+		createSaltInfoFile(document);
+	}
+	
 	
 	private static void createSaltInfoFile(SaltExtendedDocument document) throws IOException, MMAX2WrapperException{
 		OutputXmlFile(document.getFactory().getCorpus().getSaltInfoPath().getAbsolutePath() + File.separator + document.getDocumentId() + SaltExtendedMmax2Infos.SALT_INFO_FILE_ENDING,

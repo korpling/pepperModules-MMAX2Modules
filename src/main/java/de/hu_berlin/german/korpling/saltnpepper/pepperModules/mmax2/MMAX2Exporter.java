@@ -25,6 +25,7 @@ import de.hu_berlin.german.korpling.saltnpepper.pepper.pepperExceptions.PepperFW
 import de.hu_berlin.german.korpling.saltnpepper.pepper.pepperModules.PepperExporter;
 import de.hu_berlin.german.korpling.saltnpepper.pepper.pepperModules.impl.PepperExporterImpl;
 import de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2.SaltExtendedCorpusFactory.SaltExtendedCorpus;
+import de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2.SaltExtendedDocumentFactory.SaltExtendedDocument;
 import de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2.exceptions.MMAX2ExporterException;
 import de.hu_berlin.german.korpling.saltnpepper.salt.saltCommon.sCorpusStructure.SCorpus;
 import de.hu_berlin.german.korpling.saltnpepper.salt.saltCommon.sCorpusStructure.SDocument;
@@ -205,6 +206,12 @@ public class MMAX2Exporter extends PepperExporterImpl implements PepperExporter
 			this.exctractProperties();
 		}//extracts special parameters
 		
+		String ressourcePath = this.getResources().toFileString();
+		ressourcePath = ressourcePath.concat(File.separator).concat("dtd");
+		
+		
+		
+		
 		DocumentBuilder documentBuilder;
 		try {
 			documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
@@ -231,6 +238,15 @@ public class MMAX2Exporter extends PepperExporterImpl implements PepperExporter
 		corpus = corpusFactory.newEmptyCorpus(new File(this.getCorpusDefinition().getCorpusPath().toFileString()));
 		schemeFactory = new SchemeFactory(corpus,documentBuilder);
 		
+		try {
+			SaltExtendedFileGenerator.initializeCorpus(corpus,ressourcePath);
+		} catch (Exception exception) {
+			exception.printStackTrace();
+			if (getLogService()!= null)
+			{
+				getLogService().log(LogService.LOG_ERROR, "Cannot export the corpus '"+this.getCorpusDefinition().getCorpusPath()+"'. The reason is: "+exception.getMessage());
+			}		
+		}
 
 		this.mapperRunners= new BasicEList<MapperRunner>();
 		{//initialize ThreadPool
@@ -255,11 +271,8 @@ public class MMAX2Exporter extends PepperExporterImpl implements PepperExporter
 			mapperRunner.waitUntilFinish();
 		}
 		
-		mapperCorpus.finalizeCorpusStructure(corpus,schemeFactory);
 		try {
-			String ressourcePath = this.getResources().toFileString();
-			ressourcePath = ressourcePath.concat(File.separator).concat("dtd");
-			SaltExtendedFileGenerator.createCorpus(corpus, ressourcePath);
+			SaltExtendedFileGenerator.finalizeCorpus(corpus);
 		} catch (Exception exception) {
 			exception.printStackTrace();
 			if (getLogService()!= null)
@@ -383,7 +396,9 @@ public class MMAX2Exporter extends PepperExporterImpl implements PepperExporter
 				throw new MMAX2ExporterException("BUG: Cannot start export, because no SDocument object is given.");
 			try 
 			{
-				mapper.mapAllSDocument(corpus,(SDocument)sDocumentId.getSIdentifiableElement(),documentFactory,schemeFactory);
+				SDocument sDocument = (SDocument)sDocumentId.getSIdentifiableElement();
+				SaltExtendedDocument document = mapper.mapAllSDocument(corpus,sDocument,documentFactory,schemeFactory);
+				SaltExtendedFileGenerator.outputDocument(corpus, document);
 				getPepperModuleController().put(sDocumentId);
 			}catch (Exception e)
 			{
