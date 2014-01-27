@@ -126,7 +126,16 @@ public class SaltExtendedCorpusFactory extends CorpusFactory{
 		public SaltExtendedDocument getDocument(String documentId){
 			return (SaltExtendedDocument) super.getDocument(documentId);
 		}
-
+		
+		/**
+		 * Adds a document to the corpus
+		 * @param document The SAltExtendedDocument to add
+		 */
+		public synchronized void addDocument(SaltExtendedDocument document){
+			super.addDocument(document);
+		}
+		
+		
 		/**
 		 * Returns the path to the folder containing the Salt informations 
 		 * @return

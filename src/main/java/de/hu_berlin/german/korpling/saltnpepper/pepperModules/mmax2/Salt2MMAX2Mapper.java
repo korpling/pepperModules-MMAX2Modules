@@ -4,10 +4,17 @@ package de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.regex.MatchResult;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.swing.text.html.HTMLDocument.HTMLReader.IsindexAction;
 import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.emf.common.util.BasicEList;
@@ -18,10 +25,13 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import com.sun.org.apache.bcel.internal.generic.DDIV;
+
 import de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2.SaltExtendedCorpusFactory.SaltExtendedCorpus;
 import de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2.SaltExtendedDocumentFactory.SaltExtendedDocument;
 import de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2.SaltExtendedMarkableFactory.SaltExtendedMarkable;
 import de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2.exceptions.MMAX2ExporterException;
+import de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2.exceptions.SaltExtendedMMAX2WrapperException;
 
 import de.hu_berlin.german.korpling.saltnpepper.salt.graph.Edge;
 import de.hu_berlin.german.korpling.saltnpepper.salt.saltCommon.sCorpusStructure.SDocument;
@@ -41,6 +51,7 @@ import de.hu_berlin.german.korpling.saltnpepper.salt.saltCore.SMetaAnnotatableEl
 import de.hu_berlin.german.korpling.saltnpepper.salt.saltCore.SMetaAnnotation;
 import de.hu_berlin.german.korpling.saltnpepper.salt.saltCore.SNode;
 import de.hu_berlin.german.korpling.saltnpepper.salt.saltCore.SRelation;
+import eurac.commul.annotations.mmax2wrapper.CorpusFactory.Corpus;
 import eurac.commul.annotations.mmax2wrapper.MMAX2WrapperException;
 import eurac.commul.annotations.mmax2wrapper.SchemeFactory;
 import eurac.commul.annotations.mmax2wrapper.SchemeFactory.MarkableAttributeFactory;
@@ -95,7 +106,7 @@ public class Salt2MMAX2Mapper
 	private Hashtable<STextualDS,ArrayList<String>> spanStextualDSCorrespondance;
 	private Hashtable<SNode,SaltExtendedMarkable> registeredSNodesMarkables;
 	private Hashtable<SRelation,SaltExtendedMarkable> registeredSRelationsMarkables;
-	private Hashtable<SLayer,SaltExtendedMarkable> registeredSLayerMarkables;
+	private HashMap<SLayer,SaltExtendedMarkable> registeredSLayerMarkables;
 	private DocumentBuilder documentBuilder;
 	
 	private Hashtable<Object,Hashtable<Scheme,SaltExtendedMarkable>> sContainerMarkables;
@@ -182,6 +193,7 @@ public class Salt2MMAX2Mapper
 				}
 				attributes.removeNamedItem(CONTAINER_ATTR_NAME);
 				String attrName = destAttrNode.getNodeValue(); 
+				
 				
 				if(attributes.getLength() != 0){
 					ArrayList<String> unknownAttributes = new ArrayList<String>();
@@ -365,7 +377,7 @@ public class Salt2MMAX2Mapper
 	 * @throws MMAX2ExporterException
 	 * @throws MMAX2WrapperException
 	 */
-	public SaltExtendedDocument mapAllSDocument(SaltExtendedCorpus corpus, SDocument sDocument, SaltExtendedDocumentFactory factory, SchemeFactory schemeFactory) throws MMAX2ExporterException, MMAX2WrapperException 
+	public void mapAllSDocument(SaltExtendedCorpus corpus, SDocument sDocument, SaltExtendedDocumentFactory factory, SchemeFactory schemeFactory) throws MMAX2ExporterException, MMAX2WrapperException 
 	{
 		// this function goes through all pieces of data in a SDocument and launch accordingly the specialized functions below
 		
@@ -374,7 +386,7 @@ public class Salt2MMAX2Mapper
 		this.spanStextualDSCorrespondance = new Hashtable<STextualDS, ArrayList<String>>();
 		this.registeredSNodesMarkables = new Hashtable<SNode, SaltExtendedMarkableFactory.SaltExtendedMarkable>();
 		this.registeredSRelationsMarkables = new Hashtable<SRelation, SaltExtendedMarkableFactory.SaltExtendedMarkable>();
-		this.registeredSLayerMarkables = new Hashtable<SLayer, SaltExtendedMarkableFactory.SaltExtendedMarkable>();
+		this.registeredSLayerMarkables = new HashMap<SLayer, SaltExtendedMarkableFactory.SaltExtendedMarkable>();
 		
 		this.sContainerMarkables = new Hashtable<Object, Hashtable<Scheme,SaltExtendedMarkable>>();
 		
@@ -513,9 +525,10 @@ public class Salt2MMAX2Mapper
 			if(sTypes != null)
 				mapSTypesToMarkable(markable,markable.getFactory().getScheme().getName(),sTypes);
 		}
-		//corpus.addDocument(document);
-		return document;	
+		corpus.addDocument(document);
 	}
+	
+	public void finalizeCorpusStructure(SaltExtendedCorpus corpus, SchemeFactory schemeFactory) throws MMAX2ExporterException{}
 	
 	// function specialized in SDocument information
 	private void mapSDocument(int lastBaseUnitId) throws MMAX2WrapperException{
@@ -622,8 +635,6 @@ public class Salt2MMAX2Mapper
 		return createMarkableForSNode(getNewId(),makeSpan(this.spanStextualDSCorrespondance.get(sTextualDs)),sTextualDs,SaltExtendedMmax2Infos.SALT_INFO_TYPE_STEXTUALDS);
 	}
 	
-	
-	
 	// function specialized in SDominanceRelation information
 	// we start the mapping but finish it in the mapStruct function because we can not create a SStruct before the SDominanceRelation (because if the SStruct mmax2 span)
 	// some informations related to the SSTruct are thus not available when processing the SDominanceRelation
@@ -653,10 +664,7 @@ public class Salt2MMAX2Mapper
 	// the mapping is done below
 	private SaltExtendedMarkable mapPointingRelation(SPointingRelation pointRel) throws MMAX2WrapperException{
 		SaltExtendedMarkable sourceMarkable = getSNodeMarkable(pointRel.getSSource());
-		SaltExtendedMarkable targetMarkable = null;
-		if(pointRel.getSTarget() != null){
-			targetMarkable = getSNodeMarkable(pointRel.getSTarget());
-		}
+		SaltExtendedMarkable targetMarkable = getSNodeMarkable(pointRel.getSTarget());
 	
 		String markableId = getNewId();
 		String markableSPan = sourceMarkable.getSpan();
@@ -666,30 +674,21 @@ public class Salt2MMAX2Mapper
 		PointerMatchCondition validated = matchSRelation(SaltExtendedMmax2Infos.SALT_INFO_TYPE_SPOINTING_REL,pointRel.getSTypes(), pointRel.getSLayers());
 		if(validated == null){		
 			addFreetextAttribute(markable,SaltExtendedMmax2Infos.SALT_INFO_TYPE_SPOINTING_REL,"source",sourceMarkable.getId());
-			if(targetMarkable != null){
-				addFreetextAttribute(markable,SaltExtendedMmax2Infos.SALT_INFO_TYPE_SPOINTING_REL,"target",targetMarkable.getId());
-			}else{
-				addFreetextAttribute(markable,SaltExtendedMmax2Infos.SALT_INFO_TYPE_SPOINTING_REL,"target","empty");	
-			}
+			addFreetextAttribute(markable,SaltExtendedMmax2Infos.SALT_INFO_TYPE_SPOINTING_REL,"target",targetMarkable.getId());
 		}else{
 			SaltExtendedMarkable containerSourceMarkable = getSContainerMarkable(sourceMarkable,validated.getSourceAssociatedSchemeName(),
 					sourceMarkable.getSpan(),sourceMarkable.getSName(),sourceMarkable.getSId(),sourceMarkable.getId());
 			
+			SaltExtendedMarkable containerTargetMarkable = getSContainerMarkable(targetMarkable,validated.getTargetAssociatedSchemeName(),
+					targetMarkable.getSpan(),targetMarkable.getSName(),targetMarkable.getSId(),targetMarkable.getId());
+			
 			addFreetextAttribute(markable, SaltExtendedMmax2Infos.SALT_INFO_TYPE_SPOINTING_REL,
 					CONTAINER_POINTER_ATTR_NAME, validated.getPointedAssociatedAttributeName());
 			
+			addPointerAttribute(containerSourceMarkable, validated.getSourceAssociatedSchemeName(), validated.getTargetAssociatedSchemeName(), 
+					validated.getPointedAssociatedAttributeName(), containerTargetMarkable.getId());
+		
 			addFreetextAttribute(markable,SaltExtendedMmax2Infos.SALT_INFO_TYPE_SPOINTING_REL,"source",containerSourceMarkable.getId());
-			
-			if(targetMarkable != null){
-				SaltExtendedMarkable containerTargetMarkable = getSContainerMarkable(targetMarkable,validated.getTargetAssociatedSchemeName(),
-						targetMarkable.getSpan(),targetMarkable.getSName(),targetMarkable.getSId(),targetMarkable.getId());
-			
-				addPointerAttribute(containerSourceMarkable, validated.getSourceAssociatedSchemeName(), validated.getTargetAssociatedSchemeName(), 
-						validated.getPointedAssociatedAttributeName(), containerTargetMarkable.getId());
-			}else{
-				addPointerAttribute(containerSourceMarkable, validated.getSourceAssociatedSchemeName(), validated.getTargetAssociatedSchemeName(), 
-						validated.getPointedAssociatedAttributeName(), "empty");
-			}
 		}
 		
 		return markable;
@@ -718,9 +717,7 @@ public class Salt2MMAX2Mapper
 		SaltExtendedMarkable textualDsMarkable = getSNodeMarkable(sTextualRelation.getSTextualDS());
 		
 		String markableId = getNewId();
-		//System.out.println(sTextualRelation);
 		String markableSPan = makeSpan(this.spanStextualRelationCorrespondance.get(sTextualRelation));
-		
 		tokenMarkable.setSpan(markableSPan);
 		
 		SaltExtendedMarkable markable = createMarkableForSRelation(markableId,markableSPan,sTextualRelation,SaltExtendedMmax2Infos.SALT_INFO_TYPE_STEXTUAL_REL);
@@ -870,8 +867,8 @@ public class Salt2MMAX2Mapper
 			SaltExtendedMarkable linkMarkable = getMarkable(scheme,getNewId(),markable.getSpan(),SaltExtendedMmax2Infos.SALT_INFO_TYPE_SLAYER_LINK,markable.getSName(),markable.getSId());
 			SaltExtendedMarkable sLayerMarkable = this.registeredSLayerMarkables.get(sLayer);
 			
-			addPointerAttribute(linkMarkable,schemeName,markableSKind,"selement",markable.getId());
-			addPointerAttribute(linkMarkable,schemeName,SaltExtendedMmax2Infos.SALT_INFO_TYPE_SLAYER,"slayer",sLayerMarkable.getId());
+			addPointerAttribute(linkMarkable,schemeName,markableSKind,"SElement",markable.getId());
+			addPointerAttribute(linkMarkable,schemeName,SaltExtendedMmax2Infos.SALT_INFO_TYPE_SLAYER,"SLayer",sLayerMarkable.getId());
 			document.addMarkable(linkMarkable);
 		}
 	}
@@ -883,8 +880,8 @@ public class Salt2MMAX2Mapper
 		for(String sType: sTypes){
 			SaltExtendedMarkable linkMarkable = getMarkable(scheme,getNewId(),markable.getSpan(),SaltExtendedMmax2Infos.SALT_INFO_TYPE_STYPE_LINK,markable.getSName(),markable.getSId());
 			
-			addPointerAttribute(linkMarkable,schemeName,markableSKind,"selement",markable.getId());
-			addFreetextAttribute(linkMarkable,schemeName,"stype",sType);
+			addPointerAttribute(linkMarkable,schemeName,markableSKind,"SElement",markable.getId());
+			addFreetextAttribute(linkMarkable,schemeName,"SType",sType);
 			
 			this.document.addMarkable(linkMarkable);
 		}
@@ -895,7 +892,7 @@ public class Salt2MMAX2Mapper
 	private Scheme getScheme(String schemeName){
 		Scheme scheme = this.corpus.getScheme(schemeName);
 		if(scheme == null){
-			scheme = this.schemeFactory.newScheme(schemeName); 
+			scheme = this.schemeFactory.newScheme(schemeName,false); 
 			this.corpus.addScheme(scheme);
 		}		
 		return scheme;
@@ -921,6 +918,7 @@ public class Salt2MMAX2Mapper
 		SaltExtendedMarkable containerMarkable = null;
 		
 		Scheme associatedScheme = getScheme(schemeName);
+		associatedScheme.setActive(true);
 		if(!associatedMarkables.containsKey(associatedScheme)){
 			SaltExtendedMarkableFactory markableFactory = this.document.getFactory().getMarkableFactory(associatedScheme);
 			if(markableFactory == null){

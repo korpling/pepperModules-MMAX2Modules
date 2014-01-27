@@ -148,9 +148,13 @@ public class MMAX22SaltMapper
 			}
 		}
 		
-		if((bufferBaseDataUnit.size() != 0) & (lastTextualDsMarkable != null)){
-			sTextualDSBaseDataUnits.get(lastTextualDsMarkable).addAll(bufferBaseDataUnit);
-		}		
+		if(bufferBaseDataUnit.size() != 0){
+			if(lastTextualDsMarkable != null){
+				sTextualDSBaseDataUnits.get(lastTextualDsMarkable).addAll(bufferBaseDataUnit);
+			}else{
+				createSTextualDS(sDocumentGraph,null,bufferBaseDataUnit,indicesTokens);				
+			}
+		}
 		
 		ArrayList<SSpanningRelation> sSpanRelNodes = new ArrayList<SSpanningRelation>();
 		ArrayList<SaltExtendedMarkable> sSpanRelMarkables = new ArrayList<SaltExtendedMarkable>();
@@ -184,9 +188,6 @@ public class MMAX22SaltMapper
 					markableOfScheme = new ArrayList<SaltExtendedMarkable>();
 					newMarkables.put(markable.getFactory().getScheme(), markableOfScheme);
 				}
-				//if(markable.getFactory().getScheme().getName().equals("groups")){
-					
-				//}
 				markableOfScheme.add(markable);				
 			}else{ // markables originally produced (exported) from SAlt
 				String sType = markable.getSType();
@@ -289,21 +290,11 @@ public class MMAX22SaltMapper
 			createSLayerLink(sDocumentGraph,markable);
 		}
 		
-
-		for(int i = 0; i < sTextRelNodes.size(); i++){
-			completeSTextualRelation(sTextRelNodes.get(i),sTextRelMarkables.get(i),indicesTokens);
-		}
-
-		
-		
-		
 		
 		/* Creating new SSpans */
+		
 		SLayer mmaxSLayer = null;
 		if(newMarkables.keySet().size() != 0){ // => means "new Markables created since export from salt"
-			
-			
-			
 			for(SLayer sLayer: this.SLayerHash.values()){
 				if(sLayer.getSName().equals("Mmax2_SLayer")){
 					mmaxSLayer = sLayer;
@@ -312,36 +303,23 @@ public class MMAX22SaltMapper
 			}
 			if(mmaxSLayer == null){
 				mmaxSLayer= SaltCommonFactory.eINSTANCE.createSLayer();
-				mmaxSLayer.setSName("mmax2");
-				mmaxSLayer.setSId("mmax2");
+				mmaxSLayer.setSName("Mmax2_SLayer");
+				mmaxSLayer.setSId("Mmax2_SLayer");
 				sDocumentGraph.addSLayer(mmaxSLayer);
 			}
 		
-			if((bufferBaseDataUnit.size() != 0) & (lastTextualDsMarkable == null)){
-				STextualDS newTextualDs = createSTextualDS(sDocumentGraph,null,bufferBaseDataUnit,indicesTokens);	
-				mmaxSLayer.getSNodes().add(newTextualDs);
-				newTextualDs.getSLayers().add(mmaxSLayer);
-				
-				for(BaseDataUnit baseDataUnit: bufferBaseDataUnit){
-					getStoken(baseDataUnit.getId(), indicesTokens);
-				}
-			}
-			
 			for(Scheme scheme: newMarkables.keySet()){
 				String schemeName = scheme.getName();
-			
 				for(SaltExtendedMarkable markable: newMarkables.get(scheme)){
 					SSpan sSpan = SaltCommonFactory.eINSTANCE.createSSpan();
-					
+					sSpan.setSName(schemeName);
 					sDocumentGraph.addSNode(sSpan);
-					String newSid = getNewSid(schemeName);
-					sSpan.setSId(newSid);
-					sSpan.setSName(newSid);
+					sSpan.setSId(getNewSid(schemeName));
 					registerSNode(markable.getId(),sSpan);
 					
 					SAnnotation sAnnotation = SaltCommonFactory.eINSTANCE.createSAnnotation();
-					sAnnotation.setSNS("mmax2");
-					sAnnotation.setSName("scheme");
+					sAnnotation.setSNS("Mmax2");
+					sAnnotation.setSName("markable_scheme");
 					sAnnotation.setSValue(schemeName);
 					sSpan.addSAnnotation(sAnnotation);
 	
@@ -368,6 +346,10 @@ public class MMAX22SaltMapper
 		
 		/* linking all nodes and edges together */
 		
+		for(int i = 0; i < sTextRelNodes.size(); i++){
+			completeSTextualRelation(sTextRelNodes.get(i),sTextRelMarkables.get(i),indicesTokens);
+		}
+
 		for(int i = 0; i < sDomRelNodes.size(); i++){
 			completeSDomRel(sDomRelNodes.get(i),sDomRelMarkables.get(i));
 		}
@@ -399,33 +381,27 @@ public class MMAX22SaltMapper
 								||attributeType.equals(MarkableSetAttributeFactory.setType)){
 							SAnnotation sAnnotation = SaltCommonFactory.eINSTANCE.createSAnnotation();
 							sAnnotation.setSName(markableAttribute.getName());
-							sAnnotation.setSNS("mmax2");
+							sAnnotation.setSNS("Mmax2");
 							
 							String value = markableAttribute.getValue();
 							value = value.replaceAll("\n", "");
 							sAnnotation.setSValue(value);
 							sSpan.addSAnnotation(sAnnotation);
 						}else if(attributeType.equals(MarkablePointerAttributeFactory.pointerType)){ 
-							if(!markableAttribute.getValue().equals("empty")){
-								String[] values = markableAttribute.getValue().split(";");
-								
-								for(int i = 0; i< values.length; i++){
-									SPointingRelation sPointingRelation = SaltCommonFactory.eINSTANCE.createSPointingRelation();
-									sPointingRelation.setSName(markableAttribute.getName());
-									
-									sDocumentGraph.addSRelation(sPointingRelation);
-									sPointingRelation.addSType(markableAttribute.getName());
-									
-									sPointingRelation.setSSource(sSpan);
-									String value_i = values[i];
-									SNode sTarget = getSNode(value_i);
-									if(sTarget == null)
-										dataCorrupted("An unknown markable is referenced as the target of the pointer '"+markableAttribute.getName()+"' within markable '"+markable+"'");
-									sPointingRelation.setSTarget(sTarget);
-									mmaxSLayer.getSRelations().add(sPointingRelation);
-									sPointingRelation.getSLayers().add(mmaxSLayer);
-								}
-							}
+							SPointingRelation sPointingRelation = SaltCommonFactory.eINSTANCE.createSPointingRelation();
+							sPointingRelation.setSName(markableAttribute.getName());
+							
+							sDocumentGraph.addSRelation(sPointingRelation);
+							sPointingRelation.addSType(markableAttribute.getName());
+							
+							sPointingRelation.setSSource(sSpan);
+							SNode sTarget = getSNode(markableAttribute.getValue());
+							if(sTarget == null)
+								dataCorrupted("An unknown markable is referenced as the target of the pointer '"+markableAttribute.getName()+"' within markable '"+markable+"'");
+							sPointingRelation.setSTarget(sTarget);
+							
+							mmaxSLayer.getSRelations().add(sPointingRelation);
+							sPointingRelation.getSLayers().add(mmaxSLayer);
 						}else{
 							throw new MMAX2ImporterException("Developper error: unknown type of markable attribute '"+attributeType+"'...");
 						}		
@@ -557,8 +533,6 @@ public class MMAX22SaltMapper
 		String sTokenSpan = markable.getSpan();
 		if(!sTokenSpan.contains("..") && !sTokenSpan.contains(",")){
 			this.STokensHash.put(sTokenSpan, sToken);
-		}else{
-			throw new MMAX2ImporterException("Reimported Stoken should have such span ... "+sToken+" span=>"+sTokenSpan);
 		}
 		
 		STextualDS sTextualDs = (STextualDS) getSNode(targetTextualDsAttribute.getValue());
@@ -739,12 +713,10 @@ public class MMAX22SaltMapper
 			sTargetMarkable.removeAttribute(keyPointer);
 		}
 		
-		if(keyPointer.getValue().equals("empty")){
-			SNode sTarget = getSNode(keyPointer.getValue());
-			if(sTarget == null)
-				dataCorrupted("An unknown target node is referenced as the target for the SPointingRelation represented by markable '"+markable+"'");	
-			sPointingRelation.setSTarget(sTarget);	
-		}
+		SNode sTarget = getSNode(keyPointer.getValue());
+		if(sTarget == null)
+			dataCorrupted("An unknown target node is referenced as the target for the SPointingRelation represented by markable '"+markable+"'");	
+		sPointingRelation.setSTarget(sTarget);	
 	}
 	
 	// method to handle exported SMetaAnnotation
@@ -884,8 +856,8 @@ public class MMAX22SaltMapper
 	// method to handle when an Snode belongs to a certain Slayer
 	
 	private void createSLayerLink(SDocumentGraph sDocumentGraph,SaltExtendedMarkable markable) {
-		SLayer sLayer = this.SLayerHash.get(markable.getAttribute("slayer").getValue());
-		String sElement = markable.getAttribute("selement").getValue();
+		SLayer sLayer = this.SLayerHash.get(markable.getAttribute("SLayer").getValue());
+		String sElement = markable.getAttribute("SElement").getValue();
 		SNode sNode = getSNode(sElement);
 		if(sNode == null){
 			SRelation sRelation = getSRelation(sElement);
@@ -898,7 +870,7 @@ public class MMAX22SaltMapper
 	// method to handle when an Srelation belongs to a certain SType
 	
 	private void createSTypeLink(SaltExtendedMarkable markable) {
-		getSRelation(markable.getAttribute("selement").getValue()).addSType(markable.getAttribute("stype").getValue());		
+		getSRelation(markable.getAttribute("SElement").getValue()).addSType(markable.getAttribute("SType").getValue());		
 	}
 	
 	
@@ -989,7 +961,7 @@ public class MMAX22SaltMapper
 			newSId = schemeName+"_"+currentCpt;
 		}
 		while(this.SaltIds.containsKey(newSId));
-	
+		
 		this.SaltIdsCpt.put(schemeName, currentCpt);
 		
 		return newSId;
