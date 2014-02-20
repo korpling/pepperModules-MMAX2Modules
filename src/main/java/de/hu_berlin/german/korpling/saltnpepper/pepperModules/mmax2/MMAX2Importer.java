@@ -128,13 +128,17 @@ public class MMAX2Importer extends PepperImporterImpl implements PepperImporter
 	
 	@Override
 	public PepperMapper createPepperMapper(SElementId sElementId) {
-		
 		MMAX22SaltMapper mapper= new MMAX22SaltMapper();
-		SDocument sDocument= (SDocument) sElementId.getSIdentifiableElement();
-		try {
-			mapper.setDocument(getSaltExtendedDocumentFactory().getNewDocument(sDocument.getSName()));
-		} catch (Exception e) {
-			throw new PepperModuleException(this, "Cannot create mmax2 document for SDocument '"+sElementId.getSId()+"' because of nested exception.", e);
+		
+		if (sElementId.getSIdentifiableElement() instanceof SDocument){
+			SDocument sDocument= (SDocument) sElementId.getSIdentifiableElement();
+			try {
+				mapper.setDocument(getSaltExtendedDocumentFactory().getNewDocument(sDocument.getSName()));
+			} catch (Exception e) {
+				throw new PepperModuleException(this, "Cannot create mmax2 document for SDocument '"+sElementId.getSId()+"' because of nested exception.", e);
+			}
+		}else if (sElementId.getSIdentifiableElement() instanceof SCorpus){
+			mapper.setSCorpus((SCorpus)sElementId.getSIdentifiableElement());
 		}
 		return(mapper);
 	}

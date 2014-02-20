@@ -72,6 +72,11 @@ public class MMAX22SaltMapper extends PepperMapperImpl
 	public void setDocument(SaltExtendedDocument document) {
 		this.document = document;
 	}
+	
+	@Override
+	public DOCUMENT_STATUS mapSCorpus() {
+		return(DOCUMENT_STATUS.COMPLETED);
+	}
 
 	@Override
 	public DOCUMENT_STATUS mapSDocument() {
