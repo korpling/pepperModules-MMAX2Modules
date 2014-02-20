@@ -4,35 +4,24 @@ package de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Hashtable;
-import java.util.regex.MatchResult;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.swing.text.html.HTMLDocument.HTMLReader.IsindexAction;
 import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.emf.common.util.BasicEList;
 import org.eclipse.emf.common.util.EList;
-import org.osgi.service.log.LogService;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import com.sun.org.apache.bcel.internal.generic.DDIV;
-
+import de.hu_berlin.german.korpling.saltnpepper.pepper.modules.exceptions.PepperModuleException;
 import de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2.SaltExtendedCorpusFactory.SaltExtendedCorpus;
 import de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2.SaltExtendedDocumentFactory.SaltExtendedDocument;
 import de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2.SaltExtendedMarkableFactory.SaltExtendedMarkable;
-import de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2.exceptions.MMAX2ExporterException;
-import de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2.exceptions.SaltExtendedMMAX2WrapperException;
-
 import de.hu_berlin.german.korpling.saltnpepper.salt.graph.Edge;
 import de.hu_berlin.german.korpling.saltnpepper.salt.saltCommon.sCorpusStructure.SDocument;
 import de.hu_berlin.german.korpling.saltnpepper.salt.saltCommon.sDocumentStructure.SDocumentGraph;
@@ -51,7 +40,6 @@ import de.hu_berlin.german.korpling.saltnpepper.salt.saltCore.SMetaAnnotatableEl
 import de.hu_berlin.german.korpling.saltnpepper.salt.saltCore.SMetaAnnotation;
 import de.hu_berlin.german.korpling.saltnpepper.salt.saltCore.SNode;
 import de.hu_berlin.german.korpling.saltnpepper.salt.saltCore.SRelation;
-import eurac.commul.annotations.mmax2wrapper.CorpusFactory.Corpus;
 import eurac.commul.annotations.mmax2wrapper.MMAX2WrapperException;
 import eurac.commul.annotations.mmax2wrapper.SchemeFactory;
 import eurac.commul.annotations.mmax2wrapper.SchemeFactory.MarkableAttributeFactory;
@@ -71,20 +59,7 @@ import eurac.commul.annotations.mmax2wrapper.SchemeFactory.Scheme;
  */
 
 public class Salt2MMAX2Mapper 
-{
-
-	/**
-	 * OSGI-log service
-	 */
-	private LogService logService= null;
-	public void setLogService(LogService logService) {
-		this.logService = logService;
-	}
-
-	public LogService getLogService() {
-		return logService;
-	}
-	
+{	
 	// the element that conditions can hold to a mapping
 	private final String CONDITION_NODE_NAME = "condition";
 	private final String SNODE_TYPE_ARGUMENT = "stype";
@@ -146,7 +121,7 @@ public class Salt2MMAX2Mapper
 					
 				Node snodeTypeAttributeNode = attributes.getNamedItem(SNODE_TYPE_ARGUMENT);
 				if(snodeTypeAttributeNode == null){
-					throw new MMAX2ExporterException("SNode type '"+SNODE_TYPE_ARGUMENT+"' on Node '"+xmlNode+"' is not defined...");
+					throw new PepperModuleException("SNode type '"+SNODE_TYPE_ARGUMENT+"' on Node '"+xmlNode+"' is not defined...");
 				}
 				String sNodeType = snodeTypeAttributeNode.getNodeValue(); // Check if it matches a known type
 				attributes.removeNamedItem(SNODE_TYPE_ARGUMENT);
@@ -182,14 +157,14 @@ public class Salt2MMAX2Mapper
 				
 				Node destSchemeNode = attributes.getNamedItem(CONTAINER_SCHEME_NAME);
 				if(destSchemeNode == null){
-					throw new MMAX2ExporterException("Destination scheme '"+CONTAINER_SCHEME_NAME+"' on Node '"+xmlNode+"' is not defined...");
+					throw new PepperModuleException("Destination scheme '"+CONTAINER_SCHEME_NAME+"' on Node '"+xmlNode+"' is not defined...");
 				}
 				attributes.removeNamedItem(CONTAINER_SCHEME_NAME);
 				String schemeName = destSchemeNode.getNodeValue(); 
 				
 				Node destAttrNode = attributes.getNamedItem(CONTAINER_ATTR_NAME);
 				if(destAttrNode == null){
-					throw new MMAX2ExporterException("Destination attribute '"+CONTAINER_ATTR_NAME+"' on Node '"+xmlNode+"' is not defined...");
+					throw new PepperModuleException("Destination attribute '"+CONTAINER_ATTR_NAME+"' on Node '"+xmlNode+"' is not defined...");
 				}
 				attributes.removeNamedItem(CONTAINER_ATTR_NAME);
 				String attrName = destAttrNode.getNodeValue(); 
@@ -200,7 +175,7 @@ public class Salt2MMAX2Mapper
 					for(int j = 0; j < attributes.getLength(); j++){
 						unknownAttributes.add(attributes.item(j).getNodeName());
 					}
-					throw new MMAX2ExporterException("Unknown attributes '"+StringUtils.join(unknownAttributes,",")+"' on Node '"+xmlNode+"'");
+					throw new PepperModuleException("Unknown attributes '"+StringUtils.join(unknownAttributes,",")+"' on Node '"+xmlNode+"'");
 				}
 				
 				if(!this.conditions.containsKey(sNodeType)){
@@ -227,11 +202,11 @@ public class Salt2MMAX2Mapper
 					
 				Node srelationTypeAttributeNode = attributes.getNamedItem(SRELATION_TYPE_ARGUMENT);
 				if(srelationTypeAttributeNode == null){
-					throw new MMAX2ExporterException("SRelation type '"+SRELATION_TYPE_ARGUMENT+"' on Node '"+xmlNode+"' is not defined...");
+					throw new PepperModuleException("SRelation type '"+SRELATION_TYPE_ARGUMENT+"' on Node '"+xmlNode+"' is not defined...");
 				}
 				String sRelationType = srelationTypeAttributeNode.getNodeValue(); // Check if it matches a known type
 				if(!sRelationType.equals(SaltExtendedMmax2Infos.SALT_INFO_TYPE_SDOMINANCE_REL) &&  !sRelationType.equals(SaltExtendedMmax2Infos.SALT_INFO_TYPE_SPOINTING_REL)){
-					throw new MMAX2ExporterException("Pointer condition defined on node '"+xmlNode+"' does not address neither a SDominance relation or a SPointing relation");
+					throw new PepperModuleException("Pointer condition defined on node '"+xmlNode+"' does not address neither a SDominance relation or a SPointing relation");
 				}
 				attributes.removeNamedItem(SRELATION_TYPE_ARGUMENT);
 				
@@ -251,21 +226,21 @@ public class Salt2MMAX2Mapper
 				
 				Node sourceDestSchemeNode = attributes.getNamedItem(CONTAINER_SOURCE_SCHEME_NAME);
 				if(sourceDestSchemeNode == null){
-					throw new MMAX2ExporterException("Source destination scheme '"+CONTAINER_SOURCE_SCHEME_NAME+"' on Node '"+xmlNode+"' is not defined...");
+					throw new PepperModuleException("Source destination scheme '"+CONTAINER_SOURCE_SCHEME_NAME+"' on Node '"+xmlNode+"' is not defined...");
 				}
 				attributes.removeNamedItem(CONTAINER_SOURCE_SCHEME_NAME);
 				String sourceSchemeName = sourceDestSchemeNode.getNodeValue(); 
 				
 				Node targetDestSchemeNode = attributes.getNamedItem(CONTAINER_TARGET_SCHEME_NAME);
 				if(targetDestSchemeNode == null){
-					throw new MMAX2ExporterException("Source destination scheme '"+CONTAINER_TARGET_SCHEME_NAME+"' on Node '"+xmlNode+"' is not defined...");
+					throw new PepperModuleException("Source destination scheme '"+CONTAINER_TARGET_SCHEME_NAME+"' on Node '"+xmlNode+"' is not defined...");
 				}
 				attributes.removeNamedItem(CONTAINER_TARGET_SCHEME_NAME);
 				String targetSchemeName = targetDestSchemeNode.getNodeValue(); 
 				
 				Node destAttrNode = attributes.getNamedItem(CONTAINER_POINTER_ATTR_NAME);
 				if(destAttrNode == null){
-					throw new MMAX2ExporterException("Destination attribute '"+CONTAINER_POINTER_ATTR_NAME+"' on Node '"+xmlNode+"' is not defined...");
+					throw new PepperModuleException("Destination attribute '"+CONTAINER_POINTER_ATTR_NAME+"' on Node '"+xmlNode+"' is not defined...");
 				}
 				attributes.removeNamedItem(CONTAINER_POINTER_ATTR_NAME);
 				String attrName = destAttrNode.getNodeValue(); 
@@ -275,7 +250,7 @@ public class Salt2MMAX2Mapper
 					for(int j = 0; j < attributes.getLength(); j++){
 						unknownAttributes.add(attributes.item(j).getNodeName());
 					}
-					throw new MMAX2ExporterException("Unknown attributes '"+StringUtils.join(unknownAttributes,",")+"' on Node '"+xmlNode+"'");
+					throw new PepperModuleException("Unknown attributes '"+StringUtils.join(unknownAttributes,",")+"' on Node '"+xmlNode+"'");
 				}
 				
 				if(!this.pointersConditions.containsKey(sRelationType)){
@@ -328,7 +303,7 @@ public class Salt2MMAX2Mapper
 			}else if (key instanceof SPointingRelation){
 				markable = mapPointingRelation((SPointingRelation) key);
 			}else{
-				throw new MMAX2ExporterException("Developper error Unknown Type of SRelation => "+key.getClass());
+				throw new PepperModuleException("Developper error Unknown Type of SRelation => "+key.getClass());
 			}
 			registerSRelationMarkable(markable, key);
 		}
@@ -360,7 +335,7 @@ public class Salt2MMAX2Mapper
 			}else if (key instanceof SPointingRelation){
 				markable = mapPointingRelation((SPointingRelation) key);
 			}else{
-				throw new MMAX2ExporterException("Developper error Unknown Type of SNode => "+key.getClass());
+				throw new PepperModuleException("Developper error Unknown Type of SNode => "+key.getClass());
 			}			
 			registerSNodeMarkable(markable, key);
 		}
@@ -377,7 +352,7 @@ public class Salt2MMAX2Mapper
 	 * @throws MMAX2ExporterException
 	 * @throws MMAX2WrapperException
 	 */
-	public void mapAllSDocument(SaltExtendedCorpus corpus, SDocument sDocument, SaltExtendedDocumentFactory factory, SchemeFactory schemeFactory) throws MMAX2ExporterException, MMAX2WrapperException 
+	public void mapAllSDocument(SaltExtendedCorpus corpus, SDocument sDocument, SaltExtendedDocumentFactory factory, SchemeFactory schemeFactory) throws MMAX2WrapperException 
 	{
 		// this function goes through all pieces of data in a SDocument and launch accordingly the specialized functions below
 		
@@ -528,7 +503,9 @@ public class Salt2MMAX2Mapper
 		corpus.addDocument(document);
 	}
 	
-	public void finalizeCorpusStructure(SaltExtendedCorpus corpus, SchemeFactory schemeFactory) throws MMAX2ExporterException{}
+	public void finalizeCorpusStructure(SaltExtendedCorpus corpus, SchemeFactory schemeFactory){
+		
+	}
 	
 	// function specialized in SDocument information
 	private void mapSDocument(int lastBaseUnitId) throws MMAX2WrapperException{
@@ -844,7 +821,7 @@ public class Salt2MMAX2Mapper
 			
 			String attributeContainerName = validated.getAssociatedAttributeName();
 			if(containerMarkable.getAttribute(attributeContainerName) != null){
-				throw new MMAX2ExporterException("Matched markable '"+markable+"' has already an attribute '"+attributeContainerName+"'");
+				throw new PepperModuleException("Matched markable '"+markable+"' has already an attribute '"+attributeContainerName+"'");
 			}
 			addFreetextAttribute(containerMarkable,validated.getAssociatedSchemeName(),attributeContainerName,attributeValue);
 		}
@@ -980,7 +957,7 @@ public class Salt2MMAX2Mapper
 			for(AttributeMatchCondition matchCondition: specificConditions){
 				if(matchCondition.isMatched(attributeNameSpace, attributeName, attributeValue,sLayers)){
 					if(validated != null){
-						throw new MMAX2ExporterException("Ambiguous matching confitions '"+validated+"' and '"+matchCondition+"' have both matched '"+
+						throw new PepperModuleException("Ambiguous matching confitions '"+validated+"' and '"+matchCondition+"' have both matched '"+
 								sNodeType+"/"+attributeNameSpace+"/"+attributeName+"/"+attributeValue+"'");
 					}
 					validated = matchCondition;
@@ -1000,7 +977,7 @@ public class Salt2MMAX2Mapper
 			for(PointerMatchCondition matchCondition: specificConditions){
 				if(matchCondition.isMatched(sTypes, sLayers)){
 					if(validated != null){
-						throw new MMAX2ExporterException("Ambiguous matching confitions '"+validated+"' and '"+matchCondition+"' have both matched '"+
+						throw new PepperModuleException("Ambiguous matching confitions '"+validated+"' and '"+matchCondition+"' have both matched '"+
 								sRelationType+"'");
 					}
 					validated = matchCondition;

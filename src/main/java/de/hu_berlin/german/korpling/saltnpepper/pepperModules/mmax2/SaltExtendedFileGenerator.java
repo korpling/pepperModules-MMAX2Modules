@@ -9,14 +9,13 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import de.hu_berlin.german.korpling.saltnpepper.pepper.modules.exceptions.PepperModuleException;
 import de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2.SaltExtendedCorpusFactory.SaltExtendedCorpus;
 import de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2.SaltExtendedDocumentFactory.SaltExtendedDocument;
 import de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2.SaltExtendedMarkableFactory.SaltExtendedMarkable;
 import de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2.SaltExtendedMarkableFactory.SaltExtendedMarkableContainer;
-import de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2.exceptions.MMAX2ExporterException;
 import eurac.commul.annotations.mmax2wrapper.FileGenerator;
 import eurac.commul.annotations.mmax2wrapper.MMAX2WrapperException;
-import eurac.commul.annotations.mmax2wrapper.SchemeFactory.Scheme;
 
 /**
  * This class aims at dealing with the outputting to files of a Mmax Corpus enhanced with Salt information
@@ -37,7 +36,7 @@ public class SaltExtendedFileGenerator extends FileGenerator {
 		
 		File saltInfosDirectory = corpus.getSaltInfoPath();
 		if (!saltInfosDirectory.mkdirs()){ 
-			throw new MMAX2ExporterException("Cannot create folder for SaltInfo '"+saltInfosDirectory.getAbsolutePath()+"'");
+			throw new PepperModuleException("create folder for SaltInfo '"+saltInfosDirectory.getAbsolutePath()+"'");
 		}
 		
 		for(SaltExtendedDocument document: corpus.getSaltExtendedDocuments()){
@@ -111,7 +110,7 @@ public class SaltExtendedFileGenerator extends FileGenerator {
 	protected static String EscapeStringSimple(String original) throws MMAX2WrapperException{
 		String copy = original+"";
 		if(copy.matches(prohibed_regexp)){
-			throw new MMAX2ExporterException("'"+copy+"' contains one of the following reserved @argument@ ("+prohibed_arguments+")");	
+			throw new PepperModuleException("'"+copy+"' contains one of the following reserved @argument@ ("+prohibed_arguments+")");	
 		}		
 		return  FileGenerator.EscapeStringSimple(copy);// if good at this level then check upstairs
 	}
