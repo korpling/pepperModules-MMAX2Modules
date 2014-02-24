@@ -14,6 +14,7 @@ import de.hu_berlin.german.korpling.saltnpepper.pepper.modules.PepperMapper;
 import de.hu_berlin.german.korpling.saltnpepper.pepper.modules.exceptions.PepperModuleException;
 import de.hu_berlin.german.korpling.saltnpepper.pepper.modules.impl.PepperImporterImpl;
 import de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2.SaltExtendedCorpusFactory.SaltExtendedCorpus;
+import de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2.SaltExtendedDocumentFactory.SaltExtendedDocument;
 import de.hu_berlin.german.korpling.saltnpepper.salt.saltCommon.SaltCommonFactory;
 import de.hu_berlin.german.korpling.saltnpepper.salt.saltCommon.sCorpusStructure.SCorpus;
 import de.hu_berlin.german.korpling.saltnpepper.salt.saltCommon.sCorpusStructure.SCorpusGraph;
@@ -133,7 +134,8 @@ public class MMAX2Importer extends PepperImporterImpl implements PepperImporter
 		if (sElementId.getSIdentifiableElement() instanceof SDocument){
 			SDocument sDocument= (SDocument) sElementId.getSIdentifiableElement();
 			try {
-				mapper.setDocument(getSaltExtendedDocumentFactory().getNewDocument(sDocument.getSName()));
+				SaltExtendedDocument extendedDocument= getSaltExtendedDocumentFactory().getNewDocument(sDocument.getSName());
+				mapper.setDocument(extendedDocument);
 			} catch (Exception e) {
 				throw new PepperModuleException(this, "Cannot create mmax2 document for SDocument '"+sElementId.getSId()+"' because of nested exception.", e);
 			}
