@@ -916,9 +916,9 @@ public class MMAX22SaltMapper extends PepperMapperImpl
 		}
 		else{
 			if (!indicesTokens.containsKey(startToken))
-				logger.warn("An error in data was found: Cannot find start-token '"+startToken+"' in indicesTokens: "+indicesTokens);
+				logger.warn("An error in data was found: Cannot find start-token '"+startToken+"'.");
 			if (!indicesTokens.containsKey(endToken))
-				logger.warn("An error in data was found: Cannot find end-token '"+endToken+"' in indicesTokens: "+indicesTokens);
+				logger.warn("An error in data was found: Cannot find end-token '"+endToken+"'.");
 			return(null);
 		}		
 	}
@@ -1014,14 +1014,12 @@ public class MMAX22SaltMapper extends PepperMapperImpl
 		if (!KW_EMPTY.equals(key))
 		{
 			SaltExtendedMarkable targetMarkable = this.saltExtendedMarkableHash.get(key);
-//			if(targetMarkable == null)
-//				throw new PepperModuleDataException(this, "An error in data was found: A markable referenced as '"+key+"' is missing in known markables: "+ SaltExtendedMarkableHash);
 			if(targetMarkable != null){
 				if(targetMarkable.getSType().equals(SaltExtendedMmax2Infos.SALT_INFO_TYPE_SCONTAINER)){
 					SaltExtendedMarkableContainer targetMarkableContainer = (SaltExtendedMarkableContainer) targetMarkable;
 					key = targetMarkableContainer.getContainedId();
 				}
-			}else logger.warn("An error in data was found: A markable referenced as '"+key+"' is missing in known markables in document '"+getSDocument().getSId()+"'. Known markables are: "+ saltExtendedMarkableHash);
+			}else logger.warn("An error in data was found: A markable referenced as '"+key+"' is missing in known markables in document '"+getSDocument().getSId()+"'.");
 			
 			sNode = sNodesHash.get(key);
 		}
