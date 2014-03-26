@@ -4,13 +4,16 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 
 import org.apache.commons.lang3.StringUtils;
-import org.osgi.service.log.LogService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import de.hu_berlin.german.korpling.saltnpepper.pepper.common.DOCUMENT_STATUS;
+import de.hu_berlin.german.korpling.saltnpepper.pepper.modules.exceptions.PepperModuleDataException;
+import de.hu_berlin.german.korpling.saltnpepper.pepper.modules.exceptions.PepperModuleException;
+import de.hu_berlin.german.korpling.saltnpepper.pepper.modules.impl.PepperMapperImpl;
 import de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2.SaltExtendedDocumentFactory.SaltExtendedDocument;
 import de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2.SaltExtendedMarkableFactory.SaltExtendedMarkable;
 import de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2.SaltExtendedMarkableFactory.SaltExtendedMarkableContainer;
-import de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2.exceptions.MMAX2ImporterException;
-import de.hu_berlin.german.korpling.saltnpepper.salt.saltCommon.SaltCommonFactory;
 import de.hu_berlin.german.korpling.saltnpepper.salt.saltCommon.sCorpusStructure.SDocument;
 import de.hu_berlin.german.korpling.saltnpepper.salt.saltCommon.sDocumentStructure.SDocumentGraph;
 import de.hu_berlin.german.korpling.saltnpepper.salt.saltCommon.sDocumentStructure.SDominanceRelation;
@@ -37,6 +40,7 @@ import eurac.commul.annotations.mmax2wrapper.SchemeFactory.MarkableNominalAttrib
 import eurac.commul.annotations.mmax2wrapper.SchemeFactory.MarkablePointerAttributeFactory;
 import eurac.commul.annotations.mmax2wrapper.SchemeFactory.MarkableSetAttributeFactory;
 import eurac.commul.annotations.mmax2wrapper.SchemeFactory.Scheme;
+import de.hu_berlin.german.korpling.saltnpepper.salt.SaltFactory;
 
 /**
  * This class exports data in MMAX2 format to Salt.
@@ -46,51 +50,63 @@ import eurac.commul.annotations.mmax2wrapper.SchemeFactory.Scheme;
  * 
  */
 
-public class MMAX22SaltMapper
+public class MMAX22SaltMapper extends PepperMapperImpl
 {	
-	
-	private Hashtable<String,SNode> SNodesHash;
-	private Hashtable<String,SRelation> SRelationsHash;
-	private Hashtable<String,SLayer> SLayerHash;
-	private Hashtable<STextualDS,Integer> STextualDsOfset;
-	private Hashtable<String,SToken> STokensHash;
-	private Hashtable<String,SaltExtendedMarkable> SaltExtendedMarkableHash;
+	private static final Logger logger= LoggerFactory.getLogger(MMAX22SaltMapper.class);
+	private Hashtable<String,SNode> sNodesHash;
+	private Hashtable<String,SRelation> sRelationsHash;
+	private Hashtable<String,SLayer> sLayerHash;
+	private Hashtable<STextualDS,Integer> sTextualDsOfset;
+	private Hashtable<String,SToken> sTokensHash;
+	private Hashtable<String,SaltExtendedMarkable> saltExtendedMarkableHash;
 	private Hashtable<String,STextualDS> sTextualDsBaseDataUnitCorrespondance;
 	private Hashtable<String,String> claimSContainer;
-	private Hashtable<String,SIdentifiableElement> SaltIds;
-	private Hashtable<String,Integer> SaltIdsCpt;
+	private Hashtable<String,SIdentifiableElement> saltIds;
+	private Hashtable<String,Integer> saltIdsCpt;
 	
-
-// ================================================ start: LogService	
-	private LogService logService;
-
-	public void setLogService(LogService logService) 
-	{
-		this.logService = logService;
+	/** A mmax2 document **/
+	private SaltExtendedDocument document= null;
+	/** Returns the mmax2 document**/
+	public SaltExtendedDocument getDocument() {
+		return document;
+	}
+	/** Sets the mmax2 document**/
+	public void setDocument(SaltExtendedDocument document) {
+		this.document = document;
 	}
 	
-	public LogService getLogService() 
-	{
-		return(this.logService);
+	@Override
+	public DOCUMENT_STATUS mapSCorpus() {
+		return(DOCUMENT_STATUS.COMPLETED);
 	}
-// ================================================ end: LogService
+
+	@Override
+	public DOCUMENT_STATUS mapSDocument() {
+		if (getSDocument().getSDocumentGraph()== null)
+			getSDocument().setSDocumentGraph(SaltFactory.eINSTANCE.createSDocumentGraph());
+		if (getDocument()== null)
+			throw new PepperModuleException(this, "Cannot start mapping, because no mmax2 document was given.");
+		
+		mapSDocument(getDocument(), getSDocument());
+		return(DOCUMENT_STATUS.COMPLETED);
+	}
 	
 	/**
-	 * Maps a SaltExtendedDocument document to an SDocument sDocument
-	 * @param document The SaltExtendedDocument document to map
-	 * @param sDocument the SDocument to which the data is being mapped to 
+	 * Maps a {@link SaltExtendedDocument} document to an {@link SDocument} sDocument
+	 * @param document The {@link SaltExtendedDocument} document to map
+	 * @param sDocument the {@link SDocument} to which the data is being mapped to 
 	 */
 	public void mapSDocument(SaltExtendedDocument document,SDocument sDocument){
-		this.SNodesHash = new Hashtable<String, SNode>();
-		this.SRelationsHash = new Hashtable<String, SRelation>();
-		this.SLayerHash = new Hashtable<String, SLayer>();
-		this.STextualDsOfset = new Hashtable<STextualDS, Integer>();
-		this.STokensHash = new Hashtable<String, SToken>();
-		this.SaltExtendedMarkableHash = new Hashtable<String, SaltExtendedMarkableFactory.SaltExtendedMarkable>();
+		this.sNodesHash = new Hashtable<String, SNode>();
+		this.sRelationsHash = new Hashtable<String, SRelation>();
+		this.sLayerHash = new Hashtable<String, SLayer>();
+		this.sTextualDsOfset = new Hashtable<STextualDS, Integer>();
+		this.sTokensHash = new Hashtable<String, SToken>();
+		this.saltExtendedMarkableHash = new Hashtable<String, SaltExtendedMarkableFactory.SaltExtendedMarkable>();
 		this.sTextualDsBaseDataUnitCorrespondance = new Hashtable<String, STextualDS>();
 		this.claimSContainer = new Hashtable<String, String>();
-		this.SaltIds = new Hashtable<String,SIdentifiableElement>();
-		this.SaltIdsCpt = new Hashtable<String, Integer>();
+		this.saltIds = new Hashtable<String,SIdentifiableElement>();
+		this.saltIdsCpt = new Hashtable<String, Integer>();
 	
 		SDocumentGraph sDocumentGraph = sDocument.getSDocumentGraph();
 		sDocumentGraph.setSName(document.getDocumentId()+"_graph");
@@ -104,7 +120,7 @@ public class MMAX22SaltMapper
 					ArrayList<String> baseDataUnits = getBaseUnitIds(markableSpans[i]);
 					for(String baseDataUnit: baseDataUnits){
 						if(baseDataUnitInTextualDS.containsKey(baseDataUnit)){
-							dataCorrupted("Two textualDS covers one same basedata unit: markables '"+markable.getId()
+							throw new PepperModuleDataException(this, "Two textualDS covers one same basedata unit: markables '"+markable.getId()
 											+"' and '"+baseDataUnitInTextualDS.get(baseDataUnit).getId()+"' both covers '"+baseDataUnit+"'");
 						}else{
 							baseDataUnitInTextualDS.put(baseDataUnit,markable);
@@ -132,7 +148,7 @@ public class MMAX22SaltMapper
 				if(baseDataUnitInTextualDS.containsKey(baseDataUnit.getId())){
 					SaltExtendedMarkable textualDsMarkable =  baseDataUnitInTextualDS.get(baseDataUnit.getId());
 					if((textualDsMarkable != lastTextualDsMarkable) && (previouslySeenTextualDs.containsKey(textualDsMarkable))){
-						dataCorrupted("The spans of textualDs markables '"+textualDsMarkable.getId()+"' and '"+lastTextualDsMarkable+"' overlap one another.");
+						throw new PepperModuleDataException(this, "The spans of textualDs markables '"+textualDsMarkable.getId()+"' and '"+lastTextualDsMarkable+"' overlap one another.");
 					}
 					
 					lastTextualDsMarkable = textualDsMarkable;
@@ -181,7 +197,7 @@ public class MMAX22SaltMapper
 		SaltExtendedMarkable sDocumentMarkable = null;
 		SaltExtendedMarkable sDocumentGraphMarkable = null;
 		for(SaltExtendedMarkable markable: markables){
-			this.SaltExtendedMarkableHash.put(markable.getId(), markable);	
+			this.saltExtendedMarkableHash.put(markable.getId(), markable);	
 			if(!markable.hasSaltInformation()){	// new markable originally produced with Mmax2	
 				ArrayList<SaltExtendedMarkable> markableOfScheme = newMarkables.get(markable.getFactory().getScheme());
 				if(markableOfScheme == null){
@@ -195,14 +211,14 @@ public class MMAX22SaltMapper
 				
 				if(sType.equals(SaltExtendedMmax2Infos.SALT_INFO_TYPE_SDOCUMENT)){
 					if(sDocumentMarkable != null){
-						dataCorrupted("Two SDocument markable have been found: markables '"+markable.getId()+"' and '"+sDocumentMarkable.getId()+"'");
+						throw new PepperModuleDataException(this, "Two SDocument markable have been found: markables '"+markable.getId()+"' and '"+sDocumentMarkable.getId()+"'");
 					}
 					sDocumentMarkable = markable;
 					correspondanceSAnnotations.put(key, sDocument);
 					correspondanceSMetaAnnotations.put(key, sDocument);
 				}else if(sType.equals(SaltExtendedMmax2Infos.SALT_INFO_TYPE_SDOCUMENT_GRAPH)){
 					if(sDocumentGraphMarkable != null){
-						dataCorrupted("Two SDocumentGraph markable have been found: markables '"+markable.getId()+"' and '"+sDocumentGraphMarkable.getId()+"'");
+						throw new PepperModuleDataException(this, "Two SDocumentGraph markable have been found: markables '"+markable.getId()+"' and '"+sDocumentGraphMarkable.getId()+"'");
 					}
 					sDocumentGraphMarkable = markable;
 					correspondanceSAnnotations.put(key, sDocumentGraph);
@@ -262,7 +278,7 @@ public class MMAX22SaltMapper
 				}else if(sType.equals(SaltExtendedMmax2Infos.SALT_INFO_TYPE_SCONTAINER)){
 					handleSContainer(markable);		
 				}else{
-					throw new MMAX2ImporterException("Developper error:Unknown type '"+sType+"'");
+					throw new PepperModuleException("Developper error:Unknown type '"+sType+"'");
 				}
 			}
 		}
@@ -295,14 +311,14 @@ public class MMAX22SaltMapper
 		
 		SLayer mmaxSLayer = null;
 		if(newMarkables.keySet().size() != 0){ // => means "new Markables created since export from salt"
-			for(SLayer sLayer: this.SLayerHash.values()){
+			for(SLayer sLayer: this.sLayerHash.values()){
 				if(sLayer.getSName().equals("Mmax2_SLayer")){
 					mmaxSLayer = sLayer;
 					break;
 				}
 			}
 			if(mmaxSLayer == null){
-				mmaxSLayer= SaltCommonFactory.eINSTANCE.createSLayer();
+				mmaxSLayer= SaltFactory.eINSTANCE.createSLayer();
 				mmaxSLayer.setSName("Mmax2_SLayer");
 				mmaxSLayer.setSId("Mmax2_SLayer");
 				sDocumentGraph.addSLayer(mmaxSLayer);
@@ -311,13 +327,13 @@ public class MMAX22SaltMapper
 			for(Scheme scheme: newMarkables.keySet()){
 				String schemeName = scheme.getName();
 				for(SaltExtendedMarkable markable: newMarkables.get(scheme)){
-					SSpan sSpan = SaltCommonFactory.eINSTANCE.createSSpan();
+					SSpan sSpan = SaltFactory.eINSTANCE.createSSpan();
 					sSpan.setSName(schemeName);
 					sDocumentGraph.addSNode(sSpan);
 					sSpan.setSId(getNewSid(schemeName));
 					registerSNode(markable.getId(),sSpan);
 					
-					SAnnotation sAnnotation = SaltCommonFactory.eINSTANCE.createSAnnotation();
+					SAnnotation sAnnotation = SaltFactory.eINSTANCE.createSAnnotation();
 					sAnnotation.setSNS("Mmax2");
 					sAnnotation.setSName("markable_scheme");
 					sAnnotation.setSValue(schemeName);
@@ -332,12 +348,12 @@ public class MMAX22SaltMapper
 						ArrayList<String> baseDateUnitIds = getBaseUnitIds(spans[i]);
 						
 						for(String baseDataUnitId: baseDateUnitIds){
-							SSpanningRelation sSpanRel= SaltCommonFactory.eINSTANCE.createSSpanningRelation();
+							SSpanningRelation sSpanRel= SaltFactory.eINSTANCE.createSSpanningRelation();
 							sDocumentGraph.addSRelation(sSpanRel);
 							mmaxSLayer.getSRelations().add(sSpanRel);
 							sSpanRel.getSLayers().add(mmaxSLayer);
 							sSpanRel.setSSpan(sSpan);
-							sSpanRel.setSToken(getStoken(baseDataUnitId, indicesTokens));
+							sSpanRel.setSToken(getSToken(baseDataUnitId, indicesTokens));
 						}
 					}
 				}
@@ -379,7 +395,7 @@ public class MMAX22SaltMapper
 						if(attributeType.equals(MarkableFreetextAttributeFactory.freetextType) 
 								||attributeType.equals(MarkableNominalAttributeFactory.nominalType) 
 								||attributeType.equals(MarkableSetAttributeFactory.setType)){
-							SAnnotation sAnnotation = SaltCommonFactory.eINSTANCE.createSAnnotation();
+							SAnnotation sAnnotation = SaltFactory.eINSTANCE.createSAnnotation();
 							sAnnotation.setSName(markableAttribute.getName());
 							sAnnotation.setSNS("Mmax2");
 							
@@ -388,7 +404,7 @@ public class MMAX22SaltMapper
 							sAnnotation.setSValue(value);
 							sSpan.addSAnnotation(sAnnotation);
 						}else if(attributeType.equals(MarkablePointerAttributeFactory.pointerType)){ 
-							SPointingRelation sPointingRelation = SaltCommonFactory.eINSTANCE.createSPointingRelation();
+							SPointingRelation sPointingRelation = SaltFactory.eINSTANCE.createSPointingRelation();
 							sPointingRelation.setSName(markableAttribute.getName());
 							
 							sDocumentGraph.addSRelation(sPointingRelation);
@@ -396,14 +412,16 @@ public class MMAX22SaltMapper
 							
 							sPointingRelation.setSSource(sSpan);
 							SNode sTarget = getSNode(markableAttribute.getValue());
-							if(sTarget == null)
-								dataCorrupted("An unknown markable is referenced as the target of the pointer '"+markableAttribute.getName()+"' within markable '"+markable+"'");
-							sPointingRelation.setSTarget(sTarget);
-							
-							mmaxSLayer.getSRelations().add(sPointingRelation);
-							sPointingRelation.getSLayers().add(mmaxSLayer);
+//							if(sTarget == null)
+//								throw new PepperModuleDataException(this, "An unknown markable is referenced as the target of the pointer '"+markableAttribute.getName()+"' within markable '"+markable+"'");
+							if (sTarget!= null){
+								sPointingRelation.setSTarget(sTarget);
+								
+								mmaxSLayer.getSRelations().add(sPointingRelation);
+								sPointingRelation.getSLayers().add(mmaxSLayer);
+							}
 						}else{
-							throw new MMAX2ImporterException("Developper error: unknown type of markable attribute '"+attributeType+"'...");
+							throw new PepperModuleException("Developper error: unknown type of markable attribute '"+attributeType+"'...");
 						}		
 					}
 				}
@@ -421,10 +439,10 @@ public class MMAX22SaltMapper
 	// method to handle exported SLayer
 		
 	private SLayer createSLayer(SDocumentGraph sDocumentGraph, SaltExtendedMarkable markable) {
-		SLayer sLayer = SaltCommonFactory.eINSTANCE.createSLayer();
+		SLayer sLayer = SaltFactory.eINSTANCE.createSLayer();
 		sLayer.setSName(markable.getSName());
 		affectSId(sLayer,markable.getSId());
-		this.SLayerHash.put(markable.getId(),sLayer);	
+		this.sLayerHash.put(markable.getId(),sLayer);	
 		sDocumentGraph.addSLayer(sLayer);
 		return sLayer;
 	}
@@ -432,7 +450,7 @@ public class MMAX22SaltMapper
 	// method to handle exported STextualDs
 	
 	private STextualDS createSTextualDS(SDocumentGraph sDocumentGraph, SaltExtendedMarkable markable, ArrayList<BaseDataUnit> baseDataUnits, Hashtable<String,int[]> indicesTokens){
-		STextualDS sTextualDS = SaltCommonFactory.eINSTANCE.createSTextualDS();
+		STextualDS sTextualDS = SaltFactory.eINSTANCE.createSTextualDS();
 		if(markable == null){
 			sTextualDS.setSName("Mmax2_textualDs");
 			sTextualDS.setSId("Mmax2_textualDs");
@@ -443,7 +461,7 @@ public class MMAX22SaltMapper
 		}
 		
 		if((baseDataUnits == null) || (baseDataUnits.size() == 0)){
-			dataCorrupted("TextualDS markable "+sTextualDS.getSName()+" covers no BaseData unit at all...");
+			throw new PepperModuleDataException(this, "TextualDS markable "+sTextualDS.getSName()+" covers no BaseData unit at all...");
 		}
 		
 		int[] startAndEnd = getStartAndEnd(baseDataUnits.get(0).getId(), indicesTokens);
@@ -455,14 +473,14 @@ public class MMAX22SaltMapper
 		sTextualDS.setSText(StringUtils.join(allStr.toArray(new String[allStr.size()]),""));
 		
 		sDocumentGraph.addSNode(sTextualDS);	
-		this.STextualDsOfset.put(sTextualDS, startAndEnd[0]);
+		this.sTextualDsOfset.put(sTextualDS, startAndEnd[0]);
 		return sTextualDS;
 	}
 
 	// method to handle exported SStruct
 	
 	private SStructure createSStruct(SDocumentGraph sDocumentGraph, SaltExtendedMarkable markable) {
-		SStructure sStruct = SaltCommonFactory.eINSTANCE.createSStructure();
+		SStructure sStruct = SaltFactory.eINSTANCE.createSStructure();
 		sStruct.setSName(markable.getSName());
 		registerSNode(markable.getId(),sStruct);
 		sDocumentGraph.addSNode(sStruct);		
@@ -473,7 +491,7 @@ public class MMAX22SaltMapper
 	// method to handle exported SToken
 
 	private SToken createSToken(SDocumentGraph sDocumentGraph, SaltExtendedMarkable markable) {
-		SToken sToken = SaltCommonFactory.eINSTANCE.createSToken();
+		SToken sToken = SaltFactory.eINSTANCE.createSToken();
 		sToken.setSName(markable.getSName());
 		registerSNode(markable.getId(),sToken);
 		sDocumentGraph.addSNode(sToken);	
@@ -484,7 +502,7 @@ public class MMAX22SaltMapper
 	// method to handle exported SSPan
 	
 	private SSpan createSSPan(SDocumentGraph sDocumentGraph, SaltExtendedMarkable markable) {
-		SSpan sSpan = SaltCommonFactory.eINSTANCE.createSSpan();
+		SSpan sSpan = SaltFactory.eINSTANCE.createSSpan();
 		sSpan.setSName(markable.getSName());
 		registerSNode(markable.getId(),sSpan);
 		sDocumentGraph.addSNode(sSpan);
@@ -495,7 +513,7 @@ public class MMAX22SaltMapper
 	// methods to handle exported STextualRelations
 	
 	private STextualRelation createSTextualRelation(SDocumentGraph sDocumentGraph, SaltExtendedMarkable markable) {
-		STextualRelation sTextualRel = SaltCommonFactory.eINSTANCE.createSTextualRelation();
+		STextualRelation sTextualRel = SaltFactory.eINSTANCE.createSTextualRelation();
 		sTextualRel.setSName(markable.getSName());
 		sDocumentGraph.addSRelation(sTextualRel);
 		registerSRelation(markable.getId(),sTextualRel);
@@ -518,37 +536,37 @@ public class MMAX22SaltMapper
 		}
 		
 		if(targetTokenAttribute == null)
-			dataCorrupted("'target_token' attribute is missing on Saltextended markable '"+markable+"' representing an STextualRelation");
+			throw new PepperModuleDataException(this, "'target_token' attribute is missing on Saltextended markable '"+markable+"' representing an STextualRelation");
 		markable.removeAttribute(targetTokenAttribute);
 		
 		if(targetTextualDsAttribute == null)
-			dataCorrupted("'target_textual_ds' attribute is missing on Saltextended markable '"+markable+"' representing an STextualRelation");
+			throw new PepperModuleDataException(this, "'target_textual_ds' attribute is missing on Saltextended markable '"+markable+"' representing an STextualRelation");
 		markable.removeAttribute(targetTextualDsAttribute);
 		
 		SToken sToken = (SToken) getSNode(targetTokenAttribute.getValue());
 		if(sToken == null)
-			dataCorrupted("An unknown SToken node '"+targetTokenAttribute.getValue()+"' is referenced in the Saltextended markable '"+markable+"' representing an STextualRelation");
+			throw new PepperModuleDataException(this, "An unknown SToken node '"+targetTokenAttribute.getValue()+"' is referenced in the Saltextended markable '"+markable+"' representing an STextualRelation");
 		sTextualRelation.setSToken(sToken);
 		
 		String sTokenSpan = markable.getSpan();
 		if(!sTokenSpan.contains("..") && !sTokenSpan.contains(",")){
-			this.STokensHash.put(sTokenSpan, sToken);
+			this.sTokensHash.put(sTokenSpan, sToken);
 		}
 		
 		STextualDS sTextualDs = (STextualDS) getSNode(targetTextualDsAttribute.getValue());
 		if(sTextualDs == null)
-			dataCorrupted("An unknown STextualDS node '"+targetTextualDsAttribute.getValue()+"' is referenced in the Saltextended markable '"+markable+"' representing an STextualRelation");
+			throw new PepperModuleDataException(this, "An unknown STextualDS node '"+targetTextualDsAttribute.getValue()+"' is referenced in the Saltextended markable '"+markable+"' representing an STextualRelation");
 		sTextualRelation.setSTextualDS(sTextualDs);
 		
 		int[] startAndEnd = getStartAndEnd(markable.getSpan(), indicesTokens);
-		sTextualRelation.setSStart(startAndEnd[0] - this.STextualDsOfset.get(sTextualDs));
-		sTextualRelation.setSEnd(startAndEnd[1] - this.STextualDsOfset.get(sTextualDs));
+		sTextualRelation.setSStart(startAndEnd[0] - this.sTextualDsOfset.get(sTextualDs));
+		sTextualRelation.setSEnd(startAndEnd[1] - this.sTextualDsOfset.get(sTextualDs));
 	}
 	
 	// methods to handle exported SDominanceRelation
 	
 	private SDominanceRelation createSDomRel(SDocumentGraph sDocumentGraph, SaltExtendedMarkable markable) {
-		SDominanceRelation sDomRel = SaltCommonFactory.eINSTANCE.createSDominanceRelation();
+		SDominanceRelation sDomRel = SaltFactory.eINSTANCE.createSDominanceRelation();
 		sDomRel.setSName(markable.getSName());
 		sDocumentGraph.addSRelation(sDomRel);
 		registerSRelation(markable.getId(),sDomRel);
@@ -575,19 +593,19 @@ public class MMAX22SaltMapper
 		}
 		
 		if(structAttribute == null)
-			dataCorrupted("'struct' attribute is missing on Saltextended markable '"+markable+"' representing an SDominationRelation");
+			throw new PepperModuleDataException(this, "'struct' attribute is missing on Saltextended markable '"+markable+"' representing an SDominationRelation");
 		markable.removeAttribute(structAttribute);
 		
 		SNode sStruct = getSNode(structAttribute.getValue());
 		if(sStruct == null)
-			dataCorrupted("An unknown markable  is referenced as the sStructured target of the pointer within markable '"+markable+"'");
+			throw new PepperModuleDataException(this, "An unknown markable  is referenced as the sStructured target of the pointer within markable '"+markable+"'");
 		sDomRel.setSStructure((SStructure) sStruct);
 				
 		MarkableAttribute keyPointer = null;
-		SaltExtendedMarkable structureMarkable = this.SaltExtendedMarkableHash.get(structAttribute.getValue());
+		SaltExtendedMarkable structureMarkable = this.saltExtendedMarkableHash.get(structAttribute.getValue());
 		if(!structureMarkable.getSType().equals(SaltExtendedMmax2Infos.SALT_INFO_TYPE_SCONTAINER)){
 			if(targetAttribute == null)
-				dataCorrupted("'target' attribute is missing on Saltextended markable '"+markable+"' representing an SDominationRelation");
+				throw new PepperModuleDataException(this, "'target' attribute is missing on Saltextended markable '"+markable+"' representing an SDominationRelation");
 			markable.removeAttribute(targetAttribute);
 			keyPointer = targetAttribute;
 		}else{
@@ -599,15 +617,15 @@ public class MMAX22SaltMapper
 				}
 			}
 			if(keyPointer == null)
-				dataCorrupted("'"+containerPointerName+"' attribute is missing on Saltextended markable '"+structureMarkable+"' representing an SContainer");
+				throw new PepperModuleDataException(this, "'"+containerPointerName+"' attribute is missing on Saltextended markable '"+structureMarkable+"' representing an SContainer");
 			structureMarkable.removeAttribute(keyPointer);
 		}
 			
 		SNode sStructuredTarget = getSNode(keyPointer.getValue());;
 		if(sStructuredTarget == null)
-			dataCorrupted("An unknown markable is referenced as the sStructured target of the pointer within markable '"+markable+"'");
+			throw new PepperModuleDataException(this, "An unknown markable is referenced as the sStructured target of the pointer within markable '"+markable+"'");
 		if(!(sStructuredTarget instanceof SStructuredNode))
-			dataCorrupted("An dominance relation is now pointing to a SNode that is not a StructuredNode, see markable '"+markable+"'");
+			throw new PepperModuleDataException(this, "An dominance relation is now pointing to a SNode that is not a StructuredNode, see markable '"+markable+"'");
 		
 		sDomRel.setSStructuredTarget((SStructuredNode) sStructuredTarget);
 	}
@@ -615,7 +633,7 @@ public class MMAX22SaltMapper
 	// methods to handle exported SSpanningRelation
 	
 	private SSpanningRelation createSSpanningRelation(SDocumentGraph sDocumentGraph, SaltExtendedMarkable markable) {
-		SSpanningRelation sSpanningRel = SaltCommonFactory.eINSTANCE.createSSpanningRelation();
+		SSpanningRelation sSpanningRel = SaltFactory.eINSTANCE.createSSpanningRelation();
 		sSpanningRel.setSName(markable.getSName());
 		sDocumentGraph.addSRelation(sSpanningRel);
 		registerSRelation(markable.getId(),sSpanningRel);
@@ -638,28 +656,28 @@ public class MMAX22SaltMapper
 		}
 		
 		if(sourceSpanAttribute == null)
-			dataCorrupted("'source_span' attribute is missing on Saltextended markable '"+markable+"' representing an SPanningRelation");
+			throw new PepperModuleDataException(this, "'source_span' attribute is missing on Saltextended markable '"+markable+"' representing an SPanningRelation");
 		markable.removeAttribute(sourceSpanAttribute);
 		
 		SNode sSpan = getSNode(sourceSpanAttribute.getValue());
 		if(sSpan == null)
-			dataCorrupted("An unknown SSPan node is referenced as the source for the SPanningRelation represented by markable '"+markable+"'");
+			throw new PepperModuleDataException(this, "An unknown SSPan node is referenced as the source for the SPanningRelation represented by markable '"+markable+"'");
 		sSpanningRel.setSSpan((SSpan) sSpan);
 		
 		if(targetTokenAttribute == null)
-			dataCorrupted("'target_token' attribute is missing on Saltextended markable '"+markable+"' representing an SPanningRelation");
+			throw new PepperModuleDataException(this, "'target_token' attribute is missing on Saltextended markable '"+markable+"' representing an SPanningRelation");
 		markable.removeAttribute(targetTokenAttribute);
 		
 		SNode sToken =  getSNode(targetTokenAttribute.getValue());
 		if(sToken == null)
-			dataCorrupted("An unknown SToken node is referenced as the target for the SPanningRelation represented by markable '"+markable+"'");
+			throw new PepperModuleDataException(this, "An unknown SToken node is referenced as the target for the SPanningRelation represented by markable '"+markable+"'");
 		sSpanningRel.setSToken((SToken) sToken);
 	}
 	
 	// methods to handle exported SPointingRelation
 	
 	private SPointingRelation createSPointer(SDocumentGraph sDocumentGraph, SaltExtendedMarkable markable) {
-		SPointingRelation sPointingRelation = SaltCommonFactory.eINSTANCE.createSPointingRelation();		
+		SPointingRelation sPointingRelation = SaltFactory.eINSTANCE.createSPointingRelation();		
 		sPointingRelation.setSName(markable.getSName());
 		sDocumentGraph.addSRelation(sPointingRelation);
 		registerSRelation(markable.getId(),sPointingRelation);
@@ -685,19 +703,19 @@ public class MMAX22SaltMapper
 		}
 		
 		if(sourceAttribute == null)
-			dataCorrupted("'source' attribute is missing on Saltextended markable '"+markable+"' representing an SPointingRelation");
+			throw new PepperModuleDataException(this, "'source' attribute is missing on Saltextended markable '"+markable+"' representing an SPointingRelation");
 		markableAttributes.remove(sourceAttribute);
 		
 		SNode sSource = getSNode(sourceAttribute.getValue());
 		if(sSource == null)
-			dataCorrupted("An unknown source node is referenced as the source for the SPointingRelation represented by markable '"+markable+"'");
+			throw new PepperModuleDataException(this, "An unknown source node is referenced as the source for the SPointingRelation represented by markable '"+markable+"'");
 		sPointingRelation.setSSource(sSource);
 		
 		MarkableAttribute keyPointer = null;
-		SaltExtendedMarkable sTargetMarkable = this.SaltExtendedMarkableHash.get(sourceAttribute.getValue());
+		SaltExtendedMarkable sTargetMarkable = this.saltExtendedMarkableHash.get(sourceAttribute.getValue());
 		if(!sTargetMarkable.getSType().equals(SaltExtendedMmax2Infos.SALT_INFO_TYPE_SCONTAINER)){
 			if(targetAttribute == null)
-				dataCorrupted("'target' attribute is missing on Saltextended markable '"+markable+"' representing an SPointingRelation");
+				throw new PepperModuleDataException(this, "'target' attribute is missing on Saltextended markable '"+markable+"' representing an SPointingRelation");
 			keyPointer = targetAttribute;
 			markable.removeAttribute(keyPointer);
 		}else{
@@ -709,13 +727,13 @@ public class MMAX22SaltMapper
 				}
 			}
 			if(keyPointer == null)
-				dataCorrupted("'"+containerPointerName+"' attribute is missing on Saltextended markable '"+sTargetMarkable+"' representing an SContainer");
+				throw new PepperModuleDataException(this, "'"+containerPointerName+"' attribute is missing on Saltextended markable '"+sTargetMarkable+"' representing an SContainer");
 			sTargetMarkable.removeAttribute(keyPointer);
 		}
 		
 		SNode sTarget = getSNode(keyPointer.getValue());
 		if(sTarget == null)
-			dataCorrupted("An unknown target node is referenced as the target for the SPointingRelation represented by markable '"+markable+"'");	
+			throw new PepperModuleDataException(this, "An unknown target node is referenced as the target for the SPointingRelation represented by markable '"+markable+"'");	
 		sPointingRelation.setSTarget(sTarget);	
 	}
 	
@@ -748,15 +766,15 @@ public class MMAX22SaltMapper
 		}
 		
 		if(namespaceAttribute == null)
-			dataCorrupted("'namespace' attribute is missing on Saltextended markable '"+annotationMarkable+"' representing an SAnnotation");
+			throw new PepperModuleDataException(this, "'namespace' attribute is missing on Saltextended markable '"+annotationMarkable+"' representing an SAnnotation");
 		annotationMarkable.removeAttribute(namespaceAttribute);
 		
 		if(targetMarkableAttribute == null)
-			dataCorrupted("'target_markable' attribute is missing on Saltextended markable '"+annotationMarkable+"' representing an SAnnotation");
+			throw new PepperModuleDataException(this, "'target_markable' attribute is missing on Saltextended markable '"+annotationMarkable+"' representing an SAnnotation");
 		annotationMarkable.removeAttribute(targetMarkableAttribute);
 		
 		if(nameAttribute == null)
-			dataCorrupted("'attr_name' attribute is missing on Saltextended markable '"+annotationMarkable+"' representing an SAnnotation");
+			throw new PepperModuleDataException(this, "'attr_name' attribute is missing on Saltextended markable '"+annotationMarkable+"' representing an SAnnotation");
 		annotationMarkable.removeAttribute(nameAttribute);
 		
 		String attributeNameSpace = namespaceAttribute.getValue();
@@ -768,16 +786,16 @@ public class MMAX22SaltMapper
 		if((containerIdAttribute != null) && (containerAttrNameAttribute != null)){// the value of the attribute has been mapped by the exporter to a container markable
 			annotationMarkable.removeAttribute(containerIdAttribute);
 			annotationMarkable.removeAttribute(containerAttrNameAttribute);
-			SaltExtendedMarkable containerMarkable = this.SaltExtendedMarkableHash.get(containerIdAttribute.getValue());
+			SaltExtendedMarkable containerMarkable = this.saltExtendedMarkableHash.get(containerIdAttribute.getValue());
 			valueAttribute = containerMarkable.getAttribute(containerAttrNameAttribute.getValue());
 			containerMarkable.removeAttribute(valueAttribute);
 		}
 		
 		if(valueAttribute == null)
-			dataCorrupted("'"+completeAttributeName+"' attribute is missing for Annotation markable '"+annotationMarkable+"'");
+			throw new PepperModuleDataException(this, "'"+completeAttributeName+"' attribute is missing for Annotation markable '"+annotationMarkable+"'");
 		
 		
-		SMetaAnnotation sMetaAnnotation = SaltCommonFactory.eINSTANCE.createSMetaAnnotation();
+		SMetaAnnotation sMetaAnnotation = SaltFactory.eINSTANCE.createSMetaAnnotation();
 		if(!attributeNameSpace.equals(""))
 			sMetaAnnotation.setSNS(namespaceAttribute.getValue());
 		sMetaAnnotation.setSName(attributeName);
@@ -815,15 +833,15 @@ public class MMAX22SaltMapper
 		}
 		
 		if(namespaceAttribute == null)
-			dataCorrupted("'namespace' attribute is missing on Saltextended markable '"+annotationMarkable+"' representing an SAnnotation");
+			throw new PepperModuleDataException(this, "'namespace' attribute is missing on Saltextended markable '"+annotationMarkable+"' representing an SAnnotation");
 		annotationMarkable.removeAttribute(namespaceAttribute);
 		
 		if(targetMarkableAttribute == null)
-			dataCorrupted("'target_markable' attribute is missing on Saltextended markable '"+annotationMarkable+"' representing an SAnnotation");
+			throw new PepperModuleDataException(this, "'target_markable' attribute is missing on Saltextended markable '"+annotationMarkable+"' representing an SAnnotation");
 		annotationMarkable.removeAttribute(targetMarkableAttribute);
 		
 		if(nameAttribute == null)
-			dataCorrupted("'attr_name' attribute is missing on Saltextended markable '"+annotationMarkable+"' representing an SAnnotation");
+			throw new PepperModuleDataException(this, "'attr_name' attribute is missing on Saltextended markable '"+annotationMarkable+"' representing an SAnnotation");
 		annotationMarkable.removeAttribute(nameAttribute);
 		
 		String attributeNameSpace = namespaceAttribute.getValue();
@@ -836,16 +854,16 @@ public class MMAX22SaltMapper
 		if((containerIdAttribute != null) && (containerAttrNameAttribute != null)){ // the value of the attribute has been mapped by the exporter to a container markable
 			annotationMarkable.removeAttribute(containerIdAttribute);
 			annotationMarkable.removeAttribute(containerAttrNameAttribute);
-			SaltExtendedMarkable containerMarkable = this.SaltExtendedMarkableHash.get(containerIdAttribute.getValue()); // getting the container markable
+			SaltExtendedMarkable containerMarkable = this.saltExtendedMarkableHash.get(containerIdAttribute.getValue()); // getting the container markable
 			valueAttribute = containerMarkable.getAttribute(containerAttrNameAttribute.getValue());  //getting the value
 			containerMarkable.removeAttribute(valueAttribute);
 		}
 		
 		if(valueAttribute == null)
-			dataCorrupted("the value of '"+completeAttributeName+"' attribute is missing for Annotation markable '"+annotationMarkable+"'");
+			throw new PepperModuleDataException(this, "the value of '"+completeAttributeName+"' attribute is missing for Annotation markable '"+annotationMarkable+"'");
 		
 		
-		SAnnotation sAnnotation = SaltCommonFactory.eINSTANCE.createSAnnotation();
+		SAnnotation sAnnotation = SaltFactory.eINSTANCE.createSAnnotation();
 		if(!attributeNameSpace.equals(""))
 			sAnnotation.setSNS(attributeNameSpace);
 		sAnnotation.setSName(attributeName);
@@ -856,7 +874,7 @@ public class MMAX22SaltMapper
 	// method to handle when an Snode belongs to a certain Slayer
 	
 	private void createSLayerLink(SDocumentGraph sDocumentGraph,SaltExtendedMarkable markable) {
-		SLayer sLayer = this.SLayerHash.get(markable.getAttribute("SLayer").getValue());
+		SLayer sLayer = this.sLayerHash.get(markable.getAttribute("SLayer").getValue());
 		String sElement = markable.getAttribute("SElement").getValue();
 		SNode sNode = getSNode(sElement);
 		if(sNode == null){
@@ -889,9 +907,20 @@ public class MMAX22SaltMapper
 			startToken = tokensIds[0];
 			endToken = tokensIds[1];
 		}
-		int[] result = {(new Integer(indicesTokens.get(startToken)[0])).intValue(),(new Integer(indicesTokens.get(endToken)[1])).intValue()};
-		
-		return result;		
+		if (	(indicesTokens.containsKey(startToken))&&
+				(indicesTokens.containsKey(endToken))){
+			Integer start= indicesTokens.get(startToken)[0];
+			Integer end= indicesTokens.get(endToken)[1];
+			int[] result = {start, end};
+			return(result);
+		}
+		else{
+			if (!indicesTokens.containsKey(startToken))
+				logger.warn("An error in data was found: Cannot find start-token '"+startToken+"'.");
+			if (!indicesTokens.containsKey(endToken))
+				logger.warn("An error in data was found: Cannot find end-token '"+endToken+"'.");
+			return(null);
+		}		
 	}
 	
 	private ArrayList<String> getBaseUnitIds(String span){
@@ -911,45 +940,47 @@ public class MMAX22SaltMapper
 		return results;
 	}
 	
-	private SToken getStoken(String baseInitId, Hashtable<String,int[]> indicesTokens){
-		SToken sToken = this.STokensHash.get(baseInitId);
+	private SToken getSToken(String baseInitId, Hashtable<String,int[]> indicesTokens){
+		SToken sToken = this.sTokensHash.get(baseInitId);
 		if(sToken == null){
-			sToken = SaltCommonFactory.eINSTANCE.createSToken();
-			STextualRelation sTextualRel = SaltCommonFactory.eINSTANCE.createSTextualRelation();
-			sTextualRel.setSToken(sToken);
-			
 			int[] startAndEnd = getStartAndEnd(baseInitId, indicesTokens);
-			STextualDS sTextualDsOfToken = this.sTextualDsBaseDataUnitCorrespondance.get(baseInitId);
-						
-			sTextualRel.setSTextualDS(sTextualDsOfToken);
-			sTextualRel.setSStart(startAndEnd[0] - this.STextualDsOfset.get(sTextualDsOfToken));
-			sTextualRel.setSEnd(startAndEnd[1] - this.STextualDsOfset.get(sTextualDsOfToken));
+			if (startAndEnd!= null){
+				sToken = SaltFactory.eINSTANCE.createSToken();
+				STextualRelation sTextualRel = SaltFactory.eINSTANCE.createSTextualRelation();
+				sTextualRel.setSToken(sToken);
 			
-			sTextualDsOfToken.getSDocumentGraph().addSNode(sToken);	
-			for(SLayer sLayer: sTextualDsOfToken.getSLayers()){
-				sLayer.getSNodes().add(sToken);
+				STextualDS sTextualDsOfToken = this.sTextualDsBaseDataUnitCorrespondance.get(baseInitId);
+							
+				sTextualRel.setSTextualDS(sTextualDsOfToken);
+				sTextualRel.setSStart(startAndEnd[0] - this.sTextualDsOfset.get(sTextualDsOfToken));
+				sTextualRel.setSEnd(startAndEnd[1] - this.sTextualDsOfset.get(sTextualDsOfToken));
+				
+				sTextualDsOfToken.getSDocumentGraph().addSNode(sToken);	
+				for(SLayer sLayer: sTextualDsOfToken.getSLayers()){
+					sLayer.getSNodes().add(sToken);
+				}
+				sTextualDsOfToken.getSDocumentGraph().addSRelation(sTextualRel);	
+				for(SLayer sLayer: sTextualDsOfToken.getSLayers()){
+					sLayer.getSRelations().add(sTextualRel);
+				}
+				this.sTokensHash.put(baseInitId, sToken);
 			}
-			sTextualDsOfToken.getSDocumentGraph().addSRelation(sTextualRel);	
-			for(SLayer sLayer: sTextualDsOfToken.getSLayers()){
-				sLayer.getSRelations().add(sTextualRel);
-			}
-			this.STokensHash.put(baseInitId, sToken);
 		}
 		return sToken;
 	}
 	
 	
 	private void affectSId(SIdentifiableElement elem,String SId){
-		if(this.SaltIds.containsKey(SId)){
-			dataCorrupted("Two SIdentifiable elements have the same SId '"+SId+"' => '"+elem+"' and '"+this.SaltIds.get(SId)+"'");
+		if(this.saltIds.containsKey(SId)){
+			throw new PepperModuleDataException(this, "Data is corrupted => "+"Two SIdentifiable elements have the same SId '"+SId+"' => '"+elem+"' and '"+this.saltIds.get(SId)+"'");
 		}else{
-			this.SaltIds.put(SId, elem);
+			this.saltIds.put(SId, elem);
 			elem.setSId(SId);
 		}
 	}
 	
 	private String getNewSid(String schemeName){
-		Integer currentCptInteger = this.SaltIdsCpt.get(schemeName);
+		Integer currentCptInteger = this.saltIdsCpt.get(schemeName);
 		int currentCpt = 0;
 		if(currentCptInteger != null){
 			currentCpt = currentCptInteger.intValue();
@@ -960,43 +991,42 @@ public class MMAX22SaltMapper
 			currentCpt++;
 			newSId = schemeName+"_"+currentCpt;
 		}
-		while(this.SaltIds.containsKey(newSId));
+		while(this.saltIds.containsKey(newSId));
 		
-		this.SaltIdsCpt.put(schemeName, currentCpt);
+		this.saltIdsCpt.put(schemeName, currentCpt);
 		
 		return newSId;
 	}
 	
 	private void registerSRelation(String id,SRelation sRelation){
-			SRelationsHash.put(id,sRelation);	
+			sRelationsHash.put(id,sRelation);	
 	}
 	
 	private void registerSNode (String key, SNode sNode){
-		SNodesHash.put(key,sNode);		
+		sNodesHash.put(key,sNode);		
 	}
+	/** keyword for empty values like anaphor**/
+	private static final String KW_EMPTY="empty";
 	
 	private SNode getSNode(String key){
-		SNode sNode;
-
-		SaltExtendedMarkable targetMarkable = this.SaltExtendedMarkableHash.get(key);
-		if(targetMarkable == null)
-			dataCorrupted("A markable referenced as '"+key+"' is missing");
+		SNode sNode= null;
 		
-		if(targetMarkable.getSType().equals(SaltExtendedMmax2Infos.SALT_INFO_TYPE_SCONTAINER)){
-			SaltExtendedMarkableContainer targetMarkableContainer = (SaltExtendedMarkableContainer) targetMarkable;
-			key = targetMarkableContainer.getContainedId();
+		if (!KW_EMPTY.equals(key))
+		{
+			SaltExtendedMarkable targetMarkable = this.saltExtendedMarkableHash.get(key);
+			if(targetMarkable != null){
+				if(targetMarkable.getSType().equals(SaltExtendedMmax2Infos.SALT_INFO_TYPE_SCONTAINER)){
+					SaltExtendedMarkableContainer targetMarkableContainer = (SaltExtendedMarkableContainer) targetMarkable;
+					key = targetMarkableContainer.getContainedId();
+				}
+			}else logger.warn("An error in data was found: A markable referenced as '"+key+"' is missing in known markables in document '"+getSDocument().getSId()+"'.");
+			
+			sNode = sNodesHash.get(key);
 		}
-		
-		sNode = SNodesHash.get(key);
-		
 		return sNode;
 	}
 	
 	private SRelation getSRelation(String key){
-		return SRelationsHash.get(key);
+		return sRelationsHash.get(key);
 	}
-	
-	private void dataCorrupted(String message){
-		throw new MMAX2ImporterException("Data is corrupted => "+message);
-	}		
 }

@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 
 import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.ParserConfigurationException;
 
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -16,10 +15,8 @@ import org.xml.sax.SAXException;
 import de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2.SaltExtendedCorpusFactory.SaltExtendedCorpus;
 import de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2.SaltExtendedMarkableFactory.SaltExtendedMarkable;
 import de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2.exceptions.SaltExtendedMMAX2WrapperException;
-import eurac.commul.annotations.mmax2wrapper.CorpusFactory.Corpus;
 import eurac.commul.annotations.mmax2wrapper.DocumentFactory;
 import eurac.commul.annotations.mmax2wrapper.MMAX2WrapperException;
-import eurac.commul.annotations.mmax2wrapper.MarkableFactory;
 import eurac.commul.annotations.mmax2wrapper.MarkableFactory.Markable;
 import eurac.commul.annotations.mmax2wrapper.SchemeFactory.Scheme;
 
