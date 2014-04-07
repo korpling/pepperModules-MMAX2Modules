@@ -15,7 +15,7 @@ import de.hu_berlin.german.korpling.saltnpepper.pepper.modules.exceptions.Pepper
 import de.hu_berlin.german.korpling.saltnpepper.pepper.modules.impl.PepperImporterImpl;
 import de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2.SaltExtendedCorpusFactory.SaltExtendedCorpus;
 import de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2.SaltExtendedDocumentFactory.SaltExtendedDocument;
-import de.hu_berlin.german.korpling.saltnpepper.salt.saltCommon.SaltCommonFactory;
+import de.hu_berlin.german.korpling.saltnpepper.salt.SaltFactory;
 import de.hu_berlin.german.korpling.saltnpepper.salt.saltCommon.sCorpusStructure.SCorpus;
 import de.hu_berlin.german.korpling.saltnpepper.salt.saltCommon.sCorpusStructure.SCorpusGraph;
 import de.hu_berlin.german.korpling.saltnpepper.salt.saltCommon.sCorpusStructure.SDocument;
@@ -69,7 +69,7 @@ public class MMAX2Importer extends PepperImporterImpl implements PepperImporter
 		if (this.getCorpusDesc().getCorpusPath()== null)
 			throw new PepperModuleException(this, "Cannot import corpus-structure, because no corpus-path is given.");
 		
-		SCorpus sCorpus = SaltCommonFactory.eINSTANCE.createSCorpus();
+		SCorpus sCorpus = SaltFactory.eINSTANCE.createSCorpus();
 		this.sCorpusGraph= sCorpusGraph;
 		
 		URI corpusUri = this.getCorpusDesc().getCorpusPath();
@@ -82,7 +82,7 @@ public class MMAX2Importer extends PepperImporterImpl implements PepperImporter
 			this.corpus = factory.getCorpus(corpusUri.toFileString()) ;
 			
 			sCorpus.setSName(this.corpusPath.getName());
-			SElementId sCorpusId= SaltCommonFactory.eINSTANCE.createSElementId();
+			SElementId sCorpusId= SaltFactory.eINSTANCE.createSElementId();
 			sCorpusId.setSId(this.corpusPath.getName());
 			sCorpus.setSElementId(sCorpusId);
 					
@@ -95,15 +95,15 @@ public class MMAX2Importer extends PepperImporterImpl implements PepperImporter
 			
 			for(String documentId: documentsIds){
 			
-				SElementId sDocumentId= SaltCommonFactory.eINSTANCE.createSElementId();
+				SElementId sDocumentId= SaltFactory.eINSTANCE.createSElementId();
 				sDocumentId.setSId(documentId);
-				SDocument sDocument= SaltCommonFactory.eINSTANCE.createSDocument();
+				SDocument sDocument= SaltFactory.eINSTANCE.createSDocument();
 				sDocument.setSName(documentId);
 				sDocument.setSElementId(sDocumentId);
 				
 				this.sCorpusGraph.addSDocument(sCorpus, sDocument);
 				
-				SDocumentGraph sDocumentGraph = SaltCommonFactory.eINSTANCE.createSDocumentGraph();
+				SDocumentGraph sDocumentGraph = SaltFactory.eINSTANCE.createSDocumentGraph();
 				sDocument.setSDocumentGraph(sDocumentGraph);
 			}
 		} catch (Exception exception) {
