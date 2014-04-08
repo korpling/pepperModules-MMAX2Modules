@@ -82,9 +82,9 @@ public class MMAX2Importer extends PepperImporterImpl implements PepperImporter
 			this.corpus = factory.getCorpus(corpusUri.toFileString()) ;
 			
 			sCorpus.setSName(this.corpusPath.getName());
-			SElementId sCorpusId= SaltFactory.eINSTANCE.createSElementId();
-			sCorpusId.setSId(this.corpusPath.getName());
-			sCorpus.setSElementId(sCorpusId);
+//			SElementId sCorpusId= SaltFactory.eINSTANCE.createSElementId();
+//			sCorpusId.setSId(this.corpusPath.getName());
+//			sCorpus.setSElementId(sCorpusId);
 					
 			this.sCorpusGraph.setSName(this.corpusPath.getName()+"_graph");
 			sCorpus.setSCorpusGraph(this.sCorpusGraph);
@@ -93,13 +93,12 @@ public class MMAX2Importer extends PepperImporterImpl implements PepperImporter
 			if(documentsIds.size() == 0)
 				throw new PepperModuleException(this, "No documents found for the corpus in '"+corpusUri.toFileString()+"'");
 			
-			for(String documentId: documentsIds){
-			
-				SElementId sDocumentId= SaltFactory.eINSTANCE.createSElementId();
-				sDocumentId.setSId(documentId);
+			for(String documentId: documentsIds){			
+//				SElementId sDocumentId= SaltFactory.eINSTANCE.createSElementId();
+//				sDocumentId.setSId(documentId);
 				SDocument sDocument= SaltFactory.eINSTANCE.createSDocument();
 				sDocument.setSName(documentId);
-				sDocument.setSElementId(sDocumentId);
+//				sDocument.setSElementId(sDocumentId);
 				
 				this.sCorpusGraph.addSDocument(sCorpus, sDocument);
 				
