@@ -47,7 +47,7 @@ public class MMAX2Exporter extends PepperExporterImpl implements PepperExporter
 		
 		//setting name of module
 		setName("MMAX2Exporter");
-				
+		setProperties(new MMAX2ExporterProperties());
 		//set list of formats supported by this module
 		this.addSupportedFormat("mmax2", "1.0", null);
 	}
@@ -109,72 +109,6 @@ public class MMAX2Exporter extends PepperExporterImpl implements PepperExporter
 	 */
 	protected Properties props= null;
 	
-//	/**
-//	 * Extracts properties out of given special parameters.
-//	 */
-//	private void exctractProperties()
-//	{
-//		if (this.getSpecialParams()!= null)
-//		{//check if flag for running in parallel is set
-//			File propFile= new File(this.getSpecialParams().toFileString());
-//			this.props= new Properties();
-//			InputStream in= null;
-//			try{
-//				in= new FileInputStream(propFile);
-//				this.props.load(in);
-//			}catch (Exception e)
-//			{
-//				throw new PepperModuleException(this, "Cannot find input file for properties: "+propFile+".\n Nested exception: "+ e.getMessage());
-//			}
-//			finally
-//			{
-//				if (in != null)
-//				{
-//					try {
-//						in.close();
-//					} catch (IOException e) {
-//						throw new PepperModuleException(this, "Cannot close stream for file '"+props+".\n Nested exception: "+ e.getMessage());
-//					}
-//				}
-//			}
-//			if (this.props.containsKey(PROP_RUN_IN_PARALLEL))
-//			{
-//				try {
-//					Boolean val= new Boolean(this.props.getProperty(PROP_RUN_IN_PARALLEL));
-//					this.setRUN_IN_PARALLEL(val);
-//				} catch (Exception e) 
-//				{
-//					throw new PepperModuleException(this, "Cannot set correct property value of property "+PROP_RUN_IN_PARALLEL+" to "+this.getName()+", because of the value is not castable to Boolean. A correct value can contain 'true' or 'false'.\n Nested exception: "+ e.getMessage());
-//				}
-//			}
-//			else if (this.props.containsKey(PROP_NUM_OF_PARALLEL_DOCUMENTS))
-//			{
-//				try {
-//					Integer val= new Integer(this.props.getProperty(PROP_NUM_OF_PARALLEL_DOCUMENTS));
-//					if (val > 0)
-//						this.setNumOfParallelDocuments(val);
-//				} catch (Exception e) 
-//				{
-//					throw new PepperModuleException(this, "Cannot set correct property value of property "+PROP_NUM_OF_PARALLEL_DOCUMENTS+" to "+this.getName()+", because of the value is not castable to Integer. A correct value must be a positiv, whole number (>0).\n Nested exception: "+ e.getMessage());
-//				}
-//			}
-//			
-//			if (this.props.containsKey(MATCHING_CONDITIONS))
-//			{
-//				matchingConditionsFilePath= this.props.getProperty(MATCHING_CONDITIONS);
-//				
-//			}
-//			
-//			if (this.props.containsKey(POINTERS_MATCHING_CONDITIONS))
-//			{
-//				pointersMatchingConditionsFilePath= this.props.getProperty(POINTERS_MATCHING_CONDITIONS);
-//				
-//			}
-//		}//check if flag for running in parallel is set
-//	}
-	
-	
-	
 	/**
 	 * ThreadPool
 	 */
@@ -191,10 +125,6 @@ public class MMAX2Exporter extends PepperExporterImpl implements PepperExporter
 		if (	(this.getSaltProject().getSCorpusGraphs()== null)||
 				(this.getSaltProject().getSCorpusGraphs().size()== 0))
 			throw new PepperModuleException(this, "Cannot export SaltProject, no SCorpusGraphs are given.");
-		
-//		{//extracts special parameters
-//			this.exctractProperties();
-//		}//extracts special parameters
 		
 		DocumentBuilder documentBuilder;
 		try {
@@ -219,39 +149,6 @@ public class MMAX2Exporter extends PepperExporterImpl implements PepperExporter
 		schemeFactory = new SchemeFactory(corpus,documentBuilder);
 		
 		super.start();
-
-//		this.mapperRunners= new BasicEList<MapperRunner>();
-//		{//initialize ThreadPool
-//			executorService= Executors.newFixedThreadPool(this.getNumOfParallelDocuments());
-//		}//initialize ThreadPool
-//		
-//		boolean isStart= true;
-//		SElementId sElementId= null;
-//		while ((isStart) || (sElementId!= null))
-//		{	
-//			isStart= false;
-//			sElementId= this.getPepperModuleController().get();
-//			if (sElementId== null)
-//				break;
-//			
-//			//call for using push-method
-//			this.start(sElementId);
-//		}	
-//		
-//		for (MapperRunner mapperRunner: this.mapperRunners)
-//		{
-//			mapperRunner.waitUntilFinish();
-//		}
-//		
-//		mapperCorpus.finalizeCorpusStructure(corpus,schemeFactory);
-//		try {
-//			String ressourcePath = this.getResources().toFileString();
-//			ressourcePath = ressourcePath.concat(File.separator).concat("dtd");
-//			SaltExtendedFileGenerator.createCorpus(corpus, ressourcePath);
-//		} catch (Exception exception) {
-//			throw new PepperModuleException(this, "Cannot export the corpus '"+this.getCorpusDesc().getCorpusPath()+"'. The reason is: "+exception.getMessage());
-//		} 
-//		
 	}
 	
 	/**
@@ -361,7 +258,6 @@ public class MMAX2Exporter extends PepperExporterImpl implements PepperExporter
 			try 
 			{
 				mapper.mapAllSDocument(corpus,(SDocument)sDocumentId.getSIdentifiableElement(),documentFactory,schemeFactory);
-//				getPepperModuleController().put(sDocumentId);
 			}catch (Exception e)
 			{
 				throw new PepperModuleException("Cannot export the SDocument '"+sDocumentId+"'. The reason is: "+e);
