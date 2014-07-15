@@ -25,13 +25,13 @@ public class MMAX2ExporterProperties extends PepperModuleProperties {
 	
 	public String getMatchingConditionsFilePath(){
 		String retVal= null;
-		retVal= getProperty(PROP_MATCHING_CONDITIONS).toString();
+		retVal= (String)getProperty(PROP_MATCHING_CONDITIONS).getValue();
 		return(retVal);
 	}
 	
 	public String getPointersMatchingConditionsFilePath(){
 		String retVal= null;
-		retVal= getProperty(PROP_POINTERS_MATCHING_CONDITIONS).toString();
+		retVal= (String)getProperty(PROP_POINTERS_MATCHING_CONDITIONS).getValue();
 		return(retVal);
 	}
 }
