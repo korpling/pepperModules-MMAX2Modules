@@ -13,6 +13,8 @@ import javax.xml.parsers.DocumentBuilder;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.emf.common.util.BasicEList;
 import org.eclipse.emf.common.util.EList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -59,6 +61,7 @@ import eurac.commul.annotations.mmax2wrapper.SchemeFactory.Scheme;
  */
 public class Salt2MMAX2Mapper extends PepperMapperImpl
 {	
+	public static final Logger logger= LoggerFactory.getLogger(Salt2MMAX2Mapper.class);
 	// the element that conditions can hold to a mapping
 	private static final String CONDITION_NODE_NAME = "condition";
 	private static final String SNODE_TYPE_ARGUMENT = "stype";
@@ -338,7 +341,10 @@ public class Salt2MMAX2Mapper extends PepperMapperImpl
 	
 	
 	private void registerSRelationMarkable(SaltExtendedMarkable markable, SRelation key){
-		this.registeredSRelationsMarkables.put(key, markable);
+		if (	(key!= null)&&
+				(markable!= null)){
+			this.registeredSRelationsMarkables.put(key, markable);
+		}
 	}
 	
 	private SaltExtendedMarkable getSRelationMarkable(SRelation key) throws MMAX2WrapperException{
@@ -541,18 +547,20 @@ public class Salt2MMAX2Mapper extends PepperMapperImpl
 			// Records if the srelation has a certain set of STypes and if it  belongs to a given set of Slayers
 			for (SRelation sRelation: allSrelations){
 				SaltExtendedMarkable markable = getSRelationMarkable(sRelation);
-				EList<SLayer> sLayers = sRelation.getSLayers();		
-				
-				mapSMetaAnnotations(markable.getSName(),markable.getSId(),sRelation,markable.getId(),markable.getSpan(),markable.getFactory().getScheme().getName(),sLayers);
-				mapSAnnotations(markable.getSName(),markable.getSId(),sRelation,markable.getId(),markable.getSpan(),markable.getFactory().getScheme().getName(),sLayers);
-				
+				if (markable!= null){
+					EList<SLayer> sLayers = sRelation.getSLayers();		
+					mapSMetaAnnotations(markable.getSName(),markable.getSId(),sRelation,markable.getId(),markable.getSpan(),markable.getFactory().getScheme().getName(),sLayers);
+					mapSAnnotations(markable.getSName(),markable.getSId(),sRelation,markable.getId(),markable.getSpan(),markable.getFactory().getScheme().getName(),sLayers);
+									
+					if(sLayers.size() != 0)
+						mapSLayersToMarkable(markable,markable.getFactory().getScheme().getName(),sLayers);
 					
-				if(sLayers.size() != 0)
-					mapSLayersToMarkable(markable,markable.getFactory().getScheme().getName(),sLayers);
-				
-				EList<String> sTypes = sRelation.getSTypes();
-				if(sTypes != null)
-					mapSTypesToMarkable(markable,markable.getFactory().getScheme().getName(),sTypes);
+					EList<String> sTypes = sRelation.getSTypes();
+					if(sTypes != null)
+						mapSTypesToMarkable(markable,markable.getFactory().getScheme().getName(),sTypes);
+				}else{
+					logger.warn("Cannot find markable for sRelation '"+sRelation+"', therefore it will be ignored. ");
+				}
 			}
 		}catch (MMAX2WrapperException e){
 			throw new PepperModuleException(this,"",e);
@@ -748,17 +756,27 @@ public class Salt2MMAX2Mapper extends PepperMapperImpl
 	
 	// function specialized in STextualRelation information
 	private SaltExtendedMarkable mapTextualRelation(STextualRelation sTextualRelation) throws MMAX2WrapperException{
-		SaltExtendedMarkable tokenMarkable = getSNodeMarkable(sTextualRelation.getSToken());
-		SaltExtendedMarkable textualDsMarkable = getSNodeMarkable(sTextualRelation.getSTextualDS());
-		
-		String markableId = getNewId();
-		String markableSPan = makeSpan(this.spanStextualRelationCorrespondance.get(sTextualRelation));
-		tokenMarkable.setSpan(markableSPan);
-		
-		SaltExtendedMarkable markable = createMarkableForSRelation(markableId,markableSPan,sTextualRelation,SaltExtendedMmax2Infos.SALT_INFO_TYPE_STEXTUAL_REL);
-		
-		addPointerAttribute(markable,SaltExtendedMmax2Infos.SALT_INFO_TYPE_STEXTUAL_REL,SaltExtendedMmax2Infos.SALT_INFO_TYPE_STOKEN,"target_token",tokenMarkable.getId());
-		addPointerAttribute(markable,SaltExtendedMmax2Infos.SALT_INFO_TYPE_STEXTUAL_REL,SaltExtendedMmax2Infos.SALT_INFO_TYPE_STEXTUALDS,"target_textual_ds",textualDsMarkable.getId());
+		SaltExtendedMarkable markable= null;
+		if (sTextualRelation== null){
+			logger.warn("Cannot map an STextualRelation, because it was null. ");
+		}else{
+			SaltExtendedMarkable tokenMarkable = getSNodeMarkable(sTextualRelation.getSToken());
+			SaltExtendedMarkable textualDsMarkable = getSNodeMarkable(sTextualRelation.getSTextualDS());
+			
+			String markableId = getNewId();
+			Integer i= spanStextualRelationCorrespondance.get(sTextualRelation);
+			if (i== null){
+				logger.warn("Cannot map STextualRelation '"+sTextualRelation+"', because no corresponding counter was found. ");
+			}else{
+				String markableSPan = makeSpan(i);
+				tokenMarkable.setSpan(markableSPan);
+				
+				markable = createMarkableForSRelation(markableId,markableSPan,sTextualRelation,SaltExtendedMmax2Infos.SALT_INFO_TYPE_STEXTUAL_REL);
+				
+				addPointerAttribute(markable,SaltExtendedMmax2Infos.SALT_INFO_TYPE_STEXTUAL_REL,SaltExtendedMmax2Infos.SALT_INFO_TYPE_STOKEN,"target_token",tokenMarkable.getId());
+				addPointerAttribute(markable,SaltExtendedMmax2Infos.SALT_INFO_TYPE_STEXTUAL_REL,SaltExtendedMmax2Infos.SALT_INFO_TYPE_STEXTUALDS,"target_textual_ds",textualDsMarkable.getId());
+			}
+		}
 		return markable;
 	}
 	
@@ -1008,7 +1026,6 @@ public class Salt2MMAX2Mapper extends PepperMapperImpl
 	// function to check if some conditions over an attribute is validated (some mapping should be launched)
 	public AttributeMatchCondition matchSNode(String sNodeType, String attributeNameSpace,String attributeName, String attributeValue, EList<SLayer> sLayers){
 		AttributeMatchCondition validated = null;
-		System.out.println(">>>>>: "+ conditions);
 		if(this.conditions.containsKey(sNodeType)){
 			ArrayList<AttributeMatchCondition> specificConditions = this.conditions.get(sNodeType);
 			for(AttributeMatchCondition matchCondition: specificConditions){
