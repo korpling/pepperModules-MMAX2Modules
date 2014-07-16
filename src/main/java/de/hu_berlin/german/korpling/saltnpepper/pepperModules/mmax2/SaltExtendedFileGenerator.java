@@ -32,7 +32,7 @@ public class SaltExtendedFileGenerator extends FileGenerator {
 	 * @throws ParserConfigurationException
 	 */
 	public static void createCorpus(SaltExtendedCorpus corpus, String ressourcePath) throws IOException, ParserConfigurationException, MMAX2WrapperException {   
-		FileGenerator.createCorpus(corpus, ressourcePath);
+		FileGenerator.outputCorpus(corpus, ressourcePath);
 		
 		File saltInfosDirectory = corpus.getSaltInfoPath();
 		if (!saltInfosDirectory.mkdirs()){ 
