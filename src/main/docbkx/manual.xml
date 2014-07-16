@@ -1,0 +1,162 @@
+<?xml version='1.0'?>
+<book xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink" version="5.0">
+	<info>
+		<title>MMAX2Modules</title>
+		<subtitle>User&apos;s Guide</subtitle>
+		<authorgroup>
+			<author>
+				<personname><firstname>Martin</firstname>
+					<surname>Klotz</surname></personname>
+			</author>
+		</authorgroup>
+		<copyright>
+			<year>01.06.2014</year>
+			<holder>AUTHOR, All rights reserved.</holder>
+		</copyright>
+		<releaseinfo>Version ${project.version}</releaseinfo>
+	</info>
+	<preface>
+		<title>Foreword</title>
+		<para>The intention of this document is first to give a guide to the user of how to use the
+			here mentioned Pepper modules and how to utilize a mapping performed by them. Second
+			this document shall give a closer view in the details of such a mapping in a declarative
+			way, to give the user a chance to understand how specific data will be mapped by the
+			presented Pepper modules.</para>
+	</preface>
+	<chapter>
+		<title>Overview</title>
+		<para>This project contains the Pepper modules listed in <xref linkend="table_overview"/>. A
+			single module can be identified via its coordinates (module-name, format-name,
+			format-version) also given in <xref linkend="table_overview"/>. You can use these
+			coordinates in a Pepper workflow description file to identify the modules in a Pepper
+			conversion process. A description of how to model a workfloe description file can be
+			found under https://korpling.german.hu-berlin.de/saltnpepper/.</para>
+		<table frame="all" xml:id="table_overview">
+			<title>Pepper modules contained in this project</title>
+			<tgroup align="left" cols="3" colsep="1" rowsep="1">
+				<thead>
+					<row>
+						<entry>Name of Pepper module</entry>
+						<entry>Type of Pepper module</entry>
+						<entry>Format (if module is im- or exporter)</entry>
+					</row>
+				</thead>
+				<tbody>
+					<row>
+						<entry>
+							<xref endterm="sample_importer_name" linkend="sample_importer"/>
+						</entry>
+						<entry>importer</entry>
+						<entry>${project.version}</entry>
+					</row>
+					<row>
+						<entry>
+							<xref endterm="sample_importer_name" linkend="sample_importer"/>
+						</entry>
+						<entry>exporter</entry>
+						<entry>${project.version}</entry>
+					</row>
+				</tbody>
+			</tgroup>
+		</table>
+	</chapter>
+	<chapter xml:id="changes">
+		<title>Changes</title>
+		<para>Since this is the first version to be released, there are no changes.</para>
+	</chapter>
+	<chapter xml:id="sample_importer">
+		<title xml:id="sample_importer_name">MMAX2Importer</title>
+		<para/>
+	</chapter>
+	<chapter xml:id="sample_exporter">
+		<title xml:id="sample_exporter_name">MMAX2Exporter</title>
+		<para/>
+		<sect1>
+			<title>Properties</title>
+			<para>The table <xref linkend="exporter_prop_overview"/> contains an overview of all
+				usable properties to customize the behaviour of this Pepper module. The following
+				section contains a close description to each single property and describes the
+				resulting differences in the mapping to the Salt model.</para>
+			<table frame="all" xml:id="exporter_prop_overview">
+				<title>properties to customize exporter behaviour</title>
+				<tgroup align="left" cols="4" colsep="1" rowsep="1">
+					<thead>
+						<row>
+							<entry>Name of property</entry>
+							<entry>Type of property</entry>
+							<entry>optional/ mandatory</entry>
+							<entry>default value</entry>
+						</row>
+					</thead>
+					<tbody>
+						<row>
+							<entry>
+								<xref endterm="exporter_prop1_title" linkend="prop_prop1"/>
+							</entry>
+							<entry>File</entry>
+							<entry>optional</entry>
+							<entry>--</entry>
+						</row>
+						<row>
+							<entry>
+								<xref endterm="exporter_prop2_title" linkend="prop_prop2"/>
+							</entry>
+							<entry>File</entry>
+							<entry>optional</entry>
+							<entry>--</entry>
+						</row>
+					</tbody>
+				</tgroup>
+			</table>
+			<sect2 xml:id="prop_prop1">
+				<title xml:id="exporter_prop1_title"
+					>MMAX2Exporter.matchingConditionsFilePath</title>
+				<para>This property allows to customize the mapping of <classname>SAnnotation</classname> and
+						<classname>SMetaAnnotation</classname> objects to MMAX2. This property must
+					point to an xml File having the following structure:
+					<programlisting>&lt;conditions>
+  &lt;condition stype="XXX"  namespace_regexp="YYY"   
+    name_regexp="ZZZ" value_regexp="AAAA" slayer_name_regexp="BBB"   
+    dest_scheme="CCC" dest_attr="DDD"/>
+  ...
+&lt;/conditions></programlisting>the
+						<classname>stype</classname>, <classname>dest_scheme</classname> and
+						<classname>dest_attr</classname> are mandatory, where as the others are
+					optional regexp expressions. They map the <classname>SAnnotation</classname> or
+						<classname>SMetaAnnotations</classname> of something of type
+						<classname>stype</classname> on the attribute
+						<classname>dest_attr</classname> of a "container" markable belonging to the
+					scheme <classname>dest_scheme</classname>. On the Re-import, all the
+						<classname>SDocumentGraph</classname> is recreated and the value (changed or
+					not) of the attribute of the "container" markable is copied as
+						<classname>SAnnotation</classname> of the recreated
+						<classname>SElement</classname>.
+					<programlisting>&lt;conditions>
+  &lt;condition salt_relation_type="XXX" stype_regexp="YYY"  
+    slayer_name_regexp="DDD" source_scheme="ZZZ" target_scheme="AAAA"   
+    source_attr="BBB" />
+  ...
+&lt;/conditions></programlisting>
+					A similar reasoning applies to the mapping of the
+						<classname>SRelations</classname>, only the second and third arguments are
+					optional. When matching a certain <classname>SRelation</classname> of type
+						<classname>salt_relation_type</classname>, a "container" markable is created
+					for each the source and the target <classname>SNode</classname>s. A pointer
+						<classname>source_attr</classname> is then created on the source "container"
+					markable pointing at the target "container" markable. When re-importing a
+						<classname>SRelation</classname> of type "salt_relation_type" is created
+					between the <classname>SNode</classname> of the <classname>source</classname>
+					container markable and the <classname>SNode</classname> of the
+						<classname>target</classname> container markable. </para>
+			</sect2>
+			<sect2 xml:id="prop_prop2">
+				<title xml:id="exporter_prop2_title"
+					>MMAX2Exporter.pointersMatchingConditionsFilePath</title>
+				<para>This property allows to customize the mapping of
+					<classname>SAnnotation</classname> and
+					<classname>SMetaAnnotation</classname> objects to MMAX2. This property must
+					point to an xml File having the structure given in <xref linkend="prop_prop1"/>.</para>
+			</sect2>
+		</sect1>
+	</chapter>
+</book>

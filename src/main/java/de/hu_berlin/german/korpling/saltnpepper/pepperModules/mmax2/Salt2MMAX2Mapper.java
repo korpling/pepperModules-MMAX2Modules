@@ -1199,9 +1199,3 @@ class PointerMatchCondition{
 				+" => "+this.sourceAssociatedSchemeName+":"+this.associatedPointerAttributeName+" ==> "+this.targetAssociatedSchemeName;
 	}
 }	
-	
-	
-	
-
-	
-
