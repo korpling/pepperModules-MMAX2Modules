@@ -93,14 +93,20 @@ public class SaltExtendedDocumentFactory extends DocumentFactory {
 					throw new SaltExtendedMMAX2WrapperException("Salt information '"+xmlNode.toString()+" in File '"+saltInfoFile+"' has no '"+SaltExtendedMmax2Infos.SALT_INFO_STYPE_ATTR_NAME+"' attribute defined");
 				}
 				String sTypeAttribute = sTypeAttributeNode.getNodeValue();
-				saltInfoMarkable.put("SType", sTypeAttribute);
+				saltInfoMarkable.put(SaltExtendedMmax2Infos.SALT_INFO_STYPE_ATTR_NAME, sTypeAttribute);
 				
 				if(sTypeAttribute.equals(SaltExtendedMmax2Infos.SALT_INFO_TYPE_SCONTAINER)){
 					Node containedIdAttributeNode = attributes.getNamedItem(SaltExtendedMmax2Infos.SALT_INFO_CONTAINED_ID_ATTR_NAME);
 					if(containedIdAttributeNode == null){
-						throw new SaltExtendedMMAX2WrapperException("Salt information '"+xmlNode.toString()+" on a SContained in File '"+saltInfoFile+"' has no '"+SaltExtendedMmax2Infos.SALT_INFO_CONTAINED_ID_ATTR_NAME+"' attribute defined");
+						throw new SaltExtendedMMAX2WrapperException("Salt information '"+xmlNode.toString()+" on a SContainer in File '"+saltInfoFile+"' has no '"+SaltExtendedMmax2Infos.SALT_INFO_CONTAINED_ID_ATTR_NAME+"' attribute defined");
 					}
-					saltInfoMarkable.put("ContainedId", containedIdAttributeNode.getNodeValue());
+					saltInfoMarkable.put(SaltExtendedMmax2Infos.SALT_INFO_CONTAINED_ID_ATTR_NAME, containedIdAttributeNode.getNodeValue());
+					
+					Node containedSchemeNameIdAttributeNode = attributes.getNamedItem(SaltExtendedMmax2Infos.SALT_INFO_CONTAINED_SCHEME_ATTR_NAME);
+					if(containedSchemeNameIdAttributeNode == null){
+						throw new SaltExtendedMMAX2WrapperException("Salt information '"+xmlNode.toString()+" on a SContainer in File '"+saltInfoFile+"' has no '"+SaltExtendedMmax2Infos.SALT_INFO_CONTAINED_SCHEME_ATTR_NAME+"' attribute defined");
+					}
+					saltInfoMarkable.put(SaltExtendedMmax2Infos.SALT_INFO_CONTAINED_SCHEME_ATTR_NAME, containedSchemeNameIdAttributeNode.getNodeValue());
 				}
 				
 				Node sNameAttributeNode = attributes.getNamedItem(SaltExtendedMmax2Infos.SALT_INFO_SNAME_ATTR_NAME);
@@ -108,14 +114,14 @@ public class SaltExtendedDocumentFactory extends DocumentFactory {
 					throw new SaltExtendedMMAX2WrapperException("Salt information '"+xmlNode.toString()+" in File '"+saltInfoFile+"' has no '"+SaltExtendedMmax2Infos.SALT_INFO_SNAME_ATTR_NAME+"' attribute defined");
 				}
 				String sNameAttribute = sNameAttributeNode.getNodeValue();
-				saltInfoMarkable.put("SName", sNameAttribute);
+				saltInfoMarkable.put(SaltExtendedMmax2Infos.SALT_INFO_SNAME_ATTR_NAME, sNameAttribute);
 				
 				Node sidAttributeNode = attributes.getNamedItem(SaltExtendedMmax2Infos.SALT_INFO_SID_ATTR_NAME);
 				if(sidAttributeNode == null){
 					throw new SaltExtendedMMAX2WrapperException("Salt information '"+xmlNode.toString()+" in File '"+saltInfoFile+"' has no '"+SaltExtendedMmax2Infos.SALT_INFO_SID_ATTR_NAME+"' attribute defined");
 				}
 				String sIdAttribute = sidAttributeNode.getNodeValue();
-				saltInfoMarkable.put("SId", sIdAttribute);
+				saltInfoMarkable.put(SaltExtendedMmax2Infos.SALT_INFO_SID_ATTR_NAME, sIdAttribute);
 				
 				saltInfos.put(idAttribute, saltInfoMarkable);
 			}

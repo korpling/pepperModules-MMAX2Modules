@@ -16,14 +16,14 @@ import de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2.SaltExtended
 import de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2.SaltExtendedMarkableFactory.SaltExtendedMarkableContainer;
 import eurac.commul.annotations.mmax2wrapper.FileGenerator;
 import eurac.commul.annotations.mmax2wrapper.MMAX2WrapperException;
-
+ 
 /**
  * This class aims at dealing with the outputting to files of a Mmax Corpus enhanced with Salt information
  * @author Lionel Nicolas
  */
 public class SaltExtendedFileGenerator extends FileGenerator {
 	
-	/**
+	/** 
 	 * Outputs the SaltExtended corpus to the folders contained in its internal variables
 	 * @param corpus The corpus to output
 	 * @param ressourcePath The path where to find files required by mmax2 such as the markables.dtd etc. 
@@ -42,6 +42,27 @@ public class SaltExtendedFileGenerator extends FileGenerator {
 		for(SaltExtendedDocument document: corpus.getSaltExtendedDocuments()){
 			createSaltInfoFile(document);
 		}
+	}
+	
+	public static void initializeCorpus(SaltExtendedCorpus corpus, String ressourcePa) throws IOException, MMAX2WrapperException
+	{   
+		FileGenerator.initializeCorpus(corpus, ressourcePa);
+		
+		File saltInfosDirectory = corpus.getSaltInfoPath();
+		if (!saltInfosDirectory.mkdirs()){ 
+			throw new PepperModuleException("create folder for SaltInfo '"+saltInfosDirectory.getAbsolutePath()+"'");
+		}
+	}
+	
+	public static void outputDocument(SaltExtendedCorpus corpus, SaltExtendedDocument document) throws MMAX2WrapperException, IOException
+	{   
+		FileGenerator.outputDocument(corpus,document);
+		createSaltInfoFile(document);
+	}
+	
+	public static void finalizeCorpus(SaltExtendedCorpus corpus) throws MMAX2WrapperException, IOException
+	{   
+		FileGenerator.finalizeCorpus(corpus);
 	}
 	
 	private static void createSaltInfoFile(SaltExtendedDocument document) throws IOException, MMAX2WrapperException{
@@ -87,8 +108,8 @@ public class SaltExtendedFileGenerator extends FileGenerator {
 		cpy = cpy.replaceAll("@salt_name@", EscapeString(markable.getSName()));
 		if(markable.getSType().equals(SaltExtendedMmax2Infos.SALT_INFO_TYPE_SCONTAINER)){
 			SaltExtendedMarkableContainer containerMarkable = (SaltExtendedMarkableContainer) markable;
-			cpy = cpy.replaceAll("@additional@",SaltExtendedMmax2Infos.SALT_INFO_CONTAINED_ID_ATTR_NAME+"=\""+
-					EscapeString(containerMarkable.getContainedId())+"\" ");
+			cpy = cpy.replaceAll("@additional@",SaltExtendedMmax2Infos.SALT_INFO_CONTAINED_ID_ATTR_NAME+"=\""+EscapeString(containerMarkable.getContainedId())
+											+"\" "+SaltExtendedMmax2Infos.SALT_INFO_CONTAINED_SCHEME_ATTR_NAME+"=\""+EscapeString(containerMarkable.getContainedSchemeName()));
 		}else{
 			cpy = cpy.replaceAll("@additional@", "");
 		}

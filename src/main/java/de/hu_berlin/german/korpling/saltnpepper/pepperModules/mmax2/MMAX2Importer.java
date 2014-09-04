@@ -50,17 +50,17 @@ public class MMAX2Importer extends PepperImporterImpl implements PepperImporter
 	 * Stores relation between documents and their resource 
 	 */
 	private SCorpusGraph sCorpusGraph= null;
-		
+	
+	private SaltExtendedDocumentFactory saltExtendedDocumentFactory= null;
+	
 	private SaltExtendedCorpus corpus;
-
-	private File corpusPath;
-
+	
 	/**
 	 * This method is called by Pepper at the start of conversion process. 
 	 * It shall create the structure the corpus to import. That means creating all necessary SCorpus, 
-	 * SDocument and all Relation-objects between them. The path tp the corpus to import is given by
+	 * SDocument and all Relation-objects between them. The path to the corpus to import is given by
 	 * this.getCorpusDefinition().getCorpusPath().
-	 * @param an empty graph given by Pepper, which shall contains the corpus structure
+	 * @param an empty graph given by Pepper, which shall contain the corpus structure
 	 */
 	@Override
 	public void importCorpusStructure(SCorpusGraph sCorpusGraph)
@@ -78,15 +78,15 @@ public class MMAX2Importer extends PepperImporterImpl implements PepperImporter
 			
 			String currentPath = corpusUri.toFileString();
 			
-			this.corpusPath = new File(currentPath);
+			File corpusPath = new File(currentPath);
 			this.corpus = factory.getCorpus(corpusUri.toFileString()) ;
 			
-			sCorpus.setSName(this.corpusPath.getName());
+			sCorpus.setSName(corpusPath.getName());
 //			SElementId sCorpusId= SaltFactory.eINSTANCE.createSElementId();
 //			sCorpusId.setSId(this.corpusPath.getName());
 //			sCorpus.setSElementId(sCorpusId);
 					
-			this.sCorpusGraph.setSName(this.corpusPath.getName()+"_graph");
+			this.sCorpusGraph.setSName(corpusPath.getName()+"_graph");
 			sCorpus.setSCorpusGraph(this.sCorpusGraph);
 			
 			ArrayList<String> documentsIds = factory.getDocumentIds(corpusUri.path());
@@ -105,27 +105,13 @@ public class MMAX2Importer extends PepperImporterImpl implements PepperImporter
 				SDocumentGraph sDocumentGraph = SaltFactory.eINSTANCE.createSDocumentGraph();
 				sDocument.setSDocumentGraph(sDocumentGraph);
 			}
+			saltExtendedDocumentFactory= new SaltExtendedDocumentFactory(this.corpus,DocumentBuilderFactory.newInstance().newDocumentBuilder());
 		} catch (Exception exception) {
 			throw new PepperModuleException(this, "Cannot import corpus structure '"+corpusUri.toFileString()+"'. The reason is: ", exception);	
 		}
 	}
 	
-	private SaltExtendedDocumentFactory saltExtendedDocumentFactory= null;
-	/**
-	 * Returns a {@link SaltExtendedCorpusFactory} object as a singleton instance.
-	 * @return
-	 */
-	protected synchronized SaltExtendedDocumentFactory getSaltExtendedDocumentFactory(){
-		if (saltExtendedDocumentFactory== null){
-			try {
-				saltExtendedDocumentFactory= new SaltExtendedDocumentFactory(this.corpus,DocumentBuilderFactory.newInstance().newDocumentBuilder());
-			} catch (ParserConfigurationException e) {
-				throw new PepperModuleException(this, "Cannot create SaltExtendedDocumentFactory because of nested exception. ", e);
-			}
-		}
-		return(saltExtendedDocumentFactory);
-	}
-	
+		
 	@Override
 	public PepperMapper createPepperMapper(SElementId sElementId) {
 		MMAX22SaltMapper mapper= new MMAX22SaltMapper();
@@ -133,7 +119,7 @@ public class MMAX2Importer extends PepperImporterImpl implements PepperImporter
 		if (sElementId.getSIdentifiableElement() instanceof SDocument){
 			SDocument sDocument= (SDocument) sElementId.getSIdentifiableElement();
 			try {
-				SaltExtendedDocument extendedDocument= getSaltExtendedDocumentFactory().getNewDocument(sDocument.getSName());
+				SaltExtendedDocument extendedDocument= this.saltExtendedDocumentFactory.getNewDocument(sDocument.getSName());
 				mapper.setDocument(extendedDocument);
 			} catch (Exception e) {
 				throw new PepperModuleException(this, "Cannot create mmax2 document for SDocument '"+sElementId.getSId()+"' because of nested exception.", e);

@@ -13,25 +13,25 @@ public class MMAX2ExporterProperties extends PepperModuleProperties {
 	 */
 	private static final long serialVersionUID = 3789432537912976767L;
 	/** name of property to ???**/ //TODO what does this property do
-	public static final String PROP_MATCHING_CONDITIONS="MMAX2Exporter.matchingConditionsFilePath";
+	public static final String PROP_MAPPINGS_SANNOTATIONS_FP="MMAX2Exporter.sannotationMappingsFilePath";
 	/** name of property to ???**/ //TODO what does this property do 
-	public static final String PROP_POINTERS_MATCHING_CONDITIONS="MMAX2Exporter.pointersMatchingConditionsFilePath";
+	public static final String PROP_MAPPINGS_SRELATIONS_FP="MMAX2Exporter.srelationMappingsFilePath";
 	
 	public MMAX2ExporterProperties()
 	{
-		this.addProperty(new PepperModuleProperty<String>(PROP_MATCHING_CONDITIONS, String.class, "???", false));
-		this.addProperty(new PepperModuleProperty<String>(PROP_POINTERS_MATCHING_CONDITIONS, String.class, "???",false));
+		this.addProperty(new PepperModuleProperty<String>(PROP_MAPPINGS_SANNOTATIONS_FP, String.class, "???", false));
+		this.addProperty(new PepperModuleProperty<String>(PROP_MAPPINGS_SRELATIONS_FP, String.class, "???",false));
 	}
 	
-	public String getMatchingConditionsFilePath(){
+	public String getSAnnotationMappingsFilePath(){
 		String retVal= null;
-		retVal= (String)getProperty(PROP_MATCHING_CONDITIONS).getValue();
+		retVal= (String)getProperty(PROP_MAPPINGS_SANNOTATIONS_FP).getValue();
 		return(retVal);
 	}
 	
-	public String getPointersMatchingConditionsFilePath(){
+	public String getSRelationMappingsFilePath(){
 		String retVal= null;
-		retVal= (String)getProperty(PROP_POINTERS_MATCHING_CONDITIONS).getValue();
+		retVal= (String)getProperty(PROP_MAPPINGS_SRELATIONS_FP).getValue();
 		return(retVal);
 	}
 }

@@ -19,6 +19,7 @@ public class SaltExtendedMmax2Infos extends Mmax2Infos {
 	static final String SALT_INFO_SNAME_ATTR_NAME = "salt_name";
 	static final String SALT_INFO_SID_ATTR_NAME = "salt_id";
 	static final String SALT_INFO_CONTAINED_ID_ATTR_NAME = "contained_id";
+	static final String SALT_INFO_CONTAINED_SCHEME_ATTR_NAME = "contained_scheme";
 	
 	static final String SALT_INFO_TYPE_SDOCUMENT = "SDocument";
 	static final String SALT_INFO_TYPE_SDOCUMENT_GRAPH = "SDocumentGraph";

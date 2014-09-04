@@ -34,7 +34,7 @@ public class SaltExtendedMarkableFactory extends MarkableFactory{
 	public SaltExtendedMarkableFactory(Scheme scheme, DocumentBuilder documentBuilder){
 		super(scheme,documentBuilder);
 	}
-		
+		 
 
 	/** 
 	 * Parses the markables of a document and builds accordingly all SaltExtendedMarkables objects
@@ -47,15 +47,22 @@ public class SaltExtendedMarkableFactory extends MarkableFactory{
 	 */
 	ArrayList<SaltExtendedMarkable> getSaltExtendedMarkables(String documentId, Hashtable<String,Hashtable<String,String>> saltInfos) throws SAXException, IOException, MMAX2WrapperException {
 		ArrayList<SaltExtendedMarkable> results = new ArrayList<SaltExtendedMarkable>();
+		
 		for(Markable markable : super.getMarkables(documentId)){
 			if(saltInfos.containsKey(markable.getId())){
 				Hashtable<String,String> saltInfoMarkable = saltInfos.get(markable.getId());
-				if(!saltInfoMarkable.get("SType").equals("SContainer")){			
+				if(!saltInfoMarkable.get(SaltExtendedMmax2Infos.SALT_INFO_STYPE_ATTR_NAME).equals(SaltExtendedMmax2Infos.SALT_INFO_TYPE_SCONTAINER)){			
 					results.add(newMarkable(markable.getId(), markable.getSpan(), markable.getAttributes(), 
-							saltInfoMarkable.get("SType"),saltInfoMarkable.get("SName"), saltInfoMarkable.get("SId")));	
+							saltInfoMarkable.get(SaltExtendedMmax2Infos.SALT_INFO_STYPE_ATTR_NAME),
+							saltInfoMarkable.get(SaltExtendedMmax2Infos.SALT_INFO_SNAME_ATTR_NAME), 
+							saltInfoMarkable.get(SaltExtendedMmax2Infos.SALT_INFO_SID_ATTR_NAME)));	
 				}else{
 					results.add(new SaltExtendedMarkableContainer(this, markable.getId(), markable.getSpan(), markable.getAttributes(), 
-							saltInfoMarkable.get("SType"),saltInfoMarkable.get("SName"), saltInfoMarkable.get("SId"), saltInfoMarkable.get("ContainedId")));	
+							saltInfoMarkable.get(SaltExtendedMmax2Infos.SALT_INFO_STYPE_ATTR_NAME),
+							saltInfoMarkable.get(SaltExtendedMmax2Infos.SALT_INFO_SNAME_ATTR_NAME), 
+							saltInfoMarkable.get(SaltExtendedMmax2Infos.SALT_INFO_SID_ATTR_NAME), 
+							saltInfoMarkable.get(SaltExtendedMmax2Infos.SALT_INFO_CONTAINED_ID_ATTR_NAME),
+							saltInfoMarkable.get(SaltExtendedMmax2Infos.SALT_INFO_CONTAINED_SCHEME_ATTR_NAME)));
 				}
 			}else{
 				results.add(new SaltExtendedMarkable(this,markable.getId(), markable.getSpan(), markable.getAttributes()));
@@ -90,8 +97,8 @@ public class SaltExtendedMarkableFactory extends MarkableFactory{
 	 * @param Mmax Id of the markable for which the SContainer is an alias
 	 * @return A new SaltExtendedMarkable that is in reality a SaltExtendedMarkableContainer
 	 */
-	public SaltExtendedMarkable newMarkableContainer(String id, String span, ArrayList<MarkableAttribute> attributes, String sType, String sName, String sId, String containedId){
-		return new SaltExtendedMarkableContainer(this, id, span, attributes, sType, sName, sId, containedId);
+	public SaltExtendedMarkableContainer newMarkableContainer(String id, String span, ArrayList<MarkableAttribute> attributes, String sType, String sName, String sId, String containedId, String containedSchemeName){
+		return new SaltExtendedMarkableContainer(this, id, span, attributes, sType, sName, sId, containedId, containedSchemeName);
 	}
 	
 	/**
@@ -154,27 +161,38 @@ public class SaltExtendedMarkableFactory extends MarkableFactory{
 			return this.hasSaltInformation;
 		}
 	}
+
 	
 	/**
 	 * This class models the container markable that are used to map data at export.
 	 * @author Lionel Nicolas
-	 *
 	 */
 	public class SaltExtendedMarkableContainer extends SaltExtendedMarkable{
 		private String containedId;
+		private String containedSchemeName;
 		
-		protected SaltExtendedMarkableContainer(SaltExtendedMarkableFactory factory, String id, String span, ArrayList<MarkableAttribute> attributes, String sType, String sName, String sId, String containedId){
+		protected SaltExtendedMarkableContainer(SaltExtendedMarkableFactory factory, String id, String span, ArrayList<MarkableAttribute> attributes, String sType, String sName, String sId, String containedId, String containedSchemeName){
 			super(factory,id,span,attributes,sType,sName,sId);
 			this.containedId = containedId;
+			this.containedSchemeName = containedSchemeName;
 		}
 			
 		
 		/**
 		 * Returns the Id of the markable that has been mapped in the container
 		 * @return The Id of the markable that has been mapped in the container
-		 */
+		 */ 
 		public String getContainedId(){
 			return this.containedId;
 		}
+		
+		/**
+		 * Returns the name of the Scheme of the markable that has been mapped in the container
+		 * @return the name of the Scheme of the markable that has been mapped in the container
+		 */
+		public String getContainedSchemeName(){
+			return this.containedSchemeName;
+		}
+		
 	}
 }
