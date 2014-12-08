@@ -357,7 +357,7 @@ public class MMAX22SaltMapper extends PepperMapperImpl
 					sAnnotation.setSValue(schemeName);
 					sSpan.addSAnnotation(sAnnotation);
 	
-					mmaxSLayer.getSNodes().add(sSpan);
+					sSpan.getSLayers().add(mmaxSLayer);
 					sSpan.getSLayers().add(mmaxSLayer);
 					
 					String span = markable.getSpan();
@@ -1149,7 +1149,7 @@ public class MMAX22SaltMapper extends PepperMapperImpl
 				
 				sTextualDsOfToken.getSDocumentGraph().addSNode(sToken);	
 				for(SLayer sLayer: sTextualDsOfToken.getSLayers()){
-					sLayer.getSNodes().add(sToken);
+					sToken.getSLayers().add(sLayer);
 				}
 				sTextualDsOfToken.getSDocumentGraph().addSRelation(sTextualRel);	
 				for(SLayer sLayer: sTextualDsOfToken.getSLayers()){
