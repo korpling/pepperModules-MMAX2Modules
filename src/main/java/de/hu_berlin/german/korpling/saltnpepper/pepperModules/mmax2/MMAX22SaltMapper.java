@@ -21,6 +21,8 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import de.hu_berlin.german.korpling.saltnpepper.pepper.common.DOCUMENT_STATUS;
 import de.hu_berlin.german.korpling.saltnpepper.pepper.modules.exceptions.PepperModuleDataException;
@@ -67,6 +69,7 @@ import de.hu_berlin.german.korpling.saltnpepper.salt.SaltFactory;
 
 public class MMAX22SaltMapper extends PepperMapperImpl
 {	
+	private Logger logger= LoggerFactory.getLogger(MMAX2Importer.class);
 	private Hashtable<SaltExtendedMarkable,SNode> sNodesHash;
 	private Hashtable<SaltExtendedMarkable,SRelation> sRelationsHash;
 	private Hashtable<String,SLayer> sLayerHash;
@@ -432,9 +435,10 @@ public class MMAX22SaltMapper extends PepperMapperImpl
 							MarkablePointerAttributeFactory factory = (MarkablePointerAttributeFactory) markableAttribute.getFactory();
 							
 							SaltExtendedMarkable targetMarkable = getMarkable(markableAttribute.getValue(), factory.getTargetSchemeName());
-							if(targetMarkable == null)
+							if(targetMarkable == null){
 								throw new PepperModuleDataException(this, "An unknown markable of id '"+markableAttribute.getValue()+"' belonging to scheme '"+factory.getTargetSchemeName()
 										+"' is referenced as the target of the pointer '"+markableAttribute.getName()+"' within markable '"+markable+"'");
+							}
 							SNode sTarget = getSNode(targetMarkable);
 							sPointingRelation.setSTarget(sTarget);
 							sPointingRelation.getSLayers().add(mmaxSLayer);							
@@ -1204,10 +1208,14 @@ public class MMAX22SaltMapper extends PepperMapperImpl
 	}
 	
 	private SaltExtendedMarkable getMarkable(String markableId, String schemeName){
-		if(!this.saltExtendedMarkableHash.containsKey(schemeName)){
-			return null;
+		if (schemeName!= null){
+			if(!this.saltExtendedMarkableHash.containsKey(schemeName)){
+				return null;
+			}else{
+				return this.saltExtendedMarkableHash.get(schemeName).get(markableId);
+			}
 		}else{
-			return this.saltExtendedMarkableHash.get(schemeName).get(markableId);
+			throw new PepperModuleDataException(this, "Cannot get a markable, since the passed scheme name is empty.");
 		}
 	}
 	
