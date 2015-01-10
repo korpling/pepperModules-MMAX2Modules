@@ -294,8 +294,11 @@ public class Salt2MMAX2Mapper extends PepperMapperImpl
 						int start = sTextualRelation.getSStart();
 						int end   = sTextualRelation.getSEnd();
 						for(int i = start; i < end; i++) {
-							//if(coveredCarachter[i] != null)
-							//	logger.warn("Something is off with the Salt Object => two STextualRelation span a same caracter/token at position '"+i+"':\n"+sTextualRelation+"\n"+coveredCarachter[i]);
+							if(coveredCarachter[i] != null)
+								throw new PepperModuleException("Unexportable Salt Document => Two STextualRelation span a same caracter/token at position '"+i
+											+"':\n"+sTextualRelation+"\n"+coveredCarachter[i]
+											+"\nAs Stokens and STextualRelations are, when available, mapped to MMax2 Base Data Units, they are not allowed to overlap.");
+								//	logger.warn("Something is off with the Salt Object => two STextualRelation span a same caracter/token at position '"+i+"':\n"+sTextualRelation+"\n"+coveredCarachter[i]);
 							coveredCarachter[i] = sTextualRelation;
 						}
 					}

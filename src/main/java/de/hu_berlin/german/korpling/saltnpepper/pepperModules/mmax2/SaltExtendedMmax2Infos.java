@@ -1,5 +1,8 @@
 package de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2;
 
+import java.util.Arrays;
+import java.util.List;
+
 import eurac.commul.annotations.mmax2wrapper.Mmax2Infos;
 
 
@@ -37,4 +40,29 @@ public class SaltExtendedMmax2Infos extends Mmax2Infos {
 	static final String SALT_INFO_TYPE_SMETAANNOTATION = "SMetaAnnotation";
 	static final String SALT_INFO_TYPE_SLAYER_LINK = "SLayer_link";	
 	static final String SALT_INFO_TYPE_STYPE_LINK = "SType_link";	
+	
+	static List<String> saltTypes = Arrays.asList(SALT_INFO_TYPE_SDOCUMENT,SALT_INFO_TYPE_SDOCUMENT_GRAPH,SALT_INFO_TYPE_SLAYER,SALT_INFO_TYPE_STEXTUALDS,SALT_INFO_TYPE_SSPAN,
+			SALT_INFO_TYPE_SSPANNING_REL,SALT_INFO_TYPE_STOKEN,SALT_INFO_TYPE_STEXTUAL_REL,SALT_INFO_TYPE_SSTRUCT,SALT_INFO_TYPE_SDOMINANCE_REL,SALT_INFO_TYPE_SPOINTING_REL,
+			SALT_INFO_TYPE_SCONTAINER);
+	
+	static boolean isSaltScheme(String schemeName){
+		if(!schemeName.contains("S")){
+			return false;
+		}else{
+			if(schemeName.endsWith("slayer_link") 
+					|| schemeName.endsWith("stype_link")  
+					|| schemeName.endsWith(SALT_INFO_TYPE_SANNOTATION)  
+					|| schemeName.endsWith(SALT_INFO_TYPE_SMETAANNOTATION)){
+				return true;
+			}else{
+				for(String saltType: saltTypes){
+					if(schemeName.equals(saltType)){
+						return true;
+					}					
+				}
+				return false;
+			}
+		}
+	}
+	
 }

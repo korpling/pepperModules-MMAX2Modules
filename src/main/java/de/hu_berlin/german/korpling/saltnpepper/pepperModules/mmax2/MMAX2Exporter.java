@@ -3,7 +3,6 @@ package de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Hashtable;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;

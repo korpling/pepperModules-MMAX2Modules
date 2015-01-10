@@ -124,8 +124,10 @@ public class FileGenerator {
 		createDocumentFile(document);
 
 		for(Scheme scheme: schemes){
-			if(document.getMarkablesOfLevel(scheme.getName()).size() == 0){
-				return;
+			ArrayList<Markable> markables =  document.getMarkablesOfLevel(scheme.getName());
+			
+			if((markables == null) || (markables.size() == 0)){
+				//return;
 			}else{
 				createMarkableFile(document, scheme);
 			}	

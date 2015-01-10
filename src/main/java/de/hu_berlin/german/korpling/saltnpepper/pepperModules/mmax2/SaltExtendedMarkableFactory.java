@@ -8,6 +8,7 @@ import javax.xml.parsers.DocumentBuilder;
 
 import org.xml.sax.SAXException;
 
+import de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2.exceptions.SaltExtendedMMAX2WrapperException;
 import eurac.commul.annotations.mmax2wrapper.MMAX2WrapperException;
 import eurac.commul.annotations.mmax2wrapper.MarkableFactory;
 import eurac.commul.annotations.mmax2wrapper.SchemeFactory.MarkableAttributeFactory.MarkableAttribute;
@@ -35,6 +36,25 @@ public class SaltExtendedMarkableFactory extends MarkableFactory{
 		super(scheme,documentBuilder);
 	}
 		 
+	
+	/** 
+	 * Parses the markables of a document and builds accordingly all SaltExtendedMarkables objects
+	 * @param documentId The id of the document
+	 * @return The SaltExtendedMarkables objects of a document
+	 * @throws IOException 
+	 * @throws SAXException 
+	 * @throws MMAX2WrapperException 
+	 */
+	ArrayList<SaltExtendedMarkable> getSaltExtendedMarkables(String documentId) throws MMAX2WrapperException, SAXException, IOException {
+		ArrayList<SaltExtendedMarkable> results = new ArrayList<SaltExtendedMarkable>();
+		
+		for(Markable markable : super.getMarkables(documentId)){
+			results.add(new SaltExtendedMarkable(this,markable.getId(), markable.getSpan(), markable.getAttributes()));
+		}		
+		
+		return results;	
+	}
+	
 
 	/** 
 	 * Parses the markables of a document and builds accordingly all SaltExtendedMarkables objects
@@ -64,8 +84,9 @@ public class SaltExtendedMarkableFactory extends MarkableFactory{
 							saltInfoMarkable.get(SaltExtendedMmax2Infos.SALT_INFO_CONTAINED_ID_ATTR_NAME),
 							saltInfoMarkable.get(SaltExtendedMmax2Infos.SALT_INFO_CONTAINED_SCHEME_ATTR_NAME)));
 				}
+				saltInfos.remove(markable.getId());
 			}else{
-				results.add(new SaltExtendedMarkable(this,markable.getId(), markable.getSpan(), markable.getAttributes()));
+				throw new SaltExtendedMMAX2WrapperException("Data corruption: SaltExtendedMarkable "+markable+" has no related Salt Informations");
 			}
 		}
 		return results;	

@@ -130,7 +130,23 @@ public class SaltExtendedDocumentFactory extends DocumentFactory {
 		ArrayList<Scheme> schemes = this.corpus.getSchemes();
 		for(Scheme scheme: schemes){				
 			SaltExtendedMarkableFactory markableFactory = this.getMarkableFactory(scheme);
-			markables.addAll(markableFactory.getSaltExtendedMarkables(documentId,saltInfos));
+			if(SaltExtendedMmax2Infos.isSaltScheme(scheme.getName()) == true){
+				markables.addAll(markableFactory.getSaltExtendedMarkables(documentId,saltInfos));
+			}else{
+				markables.addAll(markableFactory.getSaltExtendedMarkables(documentId));
+			}
+		}
+		if(saltInfos.size() != 0){
+			Hashtable<String,Integer> nonClaimedStypes = new Hashtable<String,Integer>();  
+			for(String markableId: saltInfos.keySet()){
+				nonClaimedStypes.put(saltInfos.get(markableId).get(SaltExtendedMmax2Infos.SALT_INFO_STYPE_ATTR_NAME), 1);
+			}
+			String nonClaimedStypesStr = "";
+			for(String nonClaimedStypeStr: nonClaimedStypes.keySet()){
+				nonClaimedStypesStr += ","+nonClaimedStypeStr;
+			}
+			
+			throw new SaltExtendedMMAX2WrapperException("Data corruption: SaltInfos have not been all reimported "+saltInfos.size()+" informations of stypes "+nonClaimedStypesStr.substring(1)+" are non claimed...");
 		}
 		return markables;
 	}
