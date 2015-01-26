@@ -21,6 +21,8 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import de.hu_berlin.german.korpling.saltnpepper.pepper.common.DOCUMENT_STATUS;
 import de.hu_berlin.german.korpling.saltnpepper.pepper.modules.exceptions.PepperModuleDataException;
@@ -67,6 +69,7 @@ import de.hu_berlin.german.korpling.saltnpepper.salt.SaltFactory;
 
 public class MMAX22SaltMapper extends PepperMapperImpl
 {	
+	private Logger logger= LoggerFactory.getLogger(MMAX2Importer.class);
 	private Hashtable<SaltExtendedMarkable,SNode> sNodesHash;
 	private Hashtable<SaltExtendedMarkable,SRelation> sRelationsHash;
 	private Hashtable<String,SLayer> sLayerHash;
@@ -1190,11 +1193,11 @@ public class MMAX22SaltMapper extends PepperMapperImpl
 				
 				sTextualDsOfToken.getSDocumentGraph().addSNode(sToken);	
 				for(SLayer sLayer: sTextualDsOfToken.getSLayers()){
-					sLayer.getSNodes().add(sToken);
+					sToken.getSLayers().add(sLayer);
 				}
 				sTextualDsOfToken.getSDocumentGraph().addSRelation(sTextualRel);	
 				for(SLayer sLayer: sTextualDsOfToken.getSLayers()){
-					sLayer.getSRelations().add(sTextualRel);
+					sTextualRel.getSLayers().add(sLayer);
 				}
 				this.sTokensHash.put(baseInitId, sToken);
 			}
