@@ -484,13 +484,17 @@ public class MMAX22SaltMapper extends PepperMapperImpl
 							MarkablePointerAttributeFactory factory = (MarkablePointerAttributeFactory) markableAttribute.getFactory();
 							
 							SaltExtendedMarkable targetMarkable = getMarkable(markableAttribute.getValue(), factory.getTargetSchemeName());
-							if(targetMarkable == null)
-								throw new PepperModuleDataException(this, "An unknown markable of id '"+markableAttribute.getValue()+"' belonging to scheme '"+factory.getTargetSchemeName()
-										+"' is referenced as the target of the pointer '"+markableAttribute.getName()+"' within markable '"+markable+"'");
-							SNode sTarget = getSNode(targetMarkable);
-							sPointingRelation.setSTarget(sTarget);
-							mmaxSLayer.getSRelations().add(sPointingRelation);
-							sPointingRelation.getSLayers().add(mmaxSLayer);							
+//							if(targetMarkable == null)
+//								throw new PepperModuleDataException(this, "An unknown markable of id '"+markableAttribute.getValue()+"' belonging to scheme '"+factory.getTargetSchemeName()
+//										+"' is referenced as the target of the pointer '"+markableAttribute.getName()+"' within markable '"+markable+"'");
+							if (targetMarkable==  null){
+								logger.warn("Cannot read markable with id '"+markableAttribute.getValue()+"', because it's schemeName is null. ");
+							}else{
+								SNode sTarget = getSNode(targetMarkable);
+								sPointingRelation.setSTarget(sTarget);
+								mmaxSLayer.getSRelations().add(sPointingRelation);
+								sPointingRelation.getSLayers().add(mmaxSLayer);
+							}
 						}else{
 							throw new PepperModuleException("Developper error: unknown type of markable attribute '"+attributeType+"'...");
 						}		
@@ -1249,6 +1253,9 @@ public class MMAX22SaltMapper extends PepperMapperImpl
 	}
 	
 	private SaltExtendedMarkable getMarkable(String markableId, String schemeName){
+		if (schemeName== null){
+			return(null);
+		}
 		if(!this.saltExtendedMarkableHash.containsKey(schemeName)){
 			return null;
 		}else{
