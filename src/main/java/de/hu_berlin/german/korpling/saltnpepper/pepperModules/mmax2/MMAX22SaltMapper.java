@@ -1154,10 +1154,12 @@ public class MMAX22SaltMapper extends PepperMapperImpl
 			return(result);
 		}
 		else{
-			if (!indicesTokens.containsKey(BaseDataUnitId))
-				throw new PepperModuleDataException(this,"An error in data was found: Cannot find start offset of base data unit '"+BaseDataUnitId+"'.");
-			if (!indicesTokens.containsKey(BaseDataUnitId))
-				throw new PepperModuleDataException(this,"An error in data was found: Cannot find end offset of base data unit '"+BaseDataUnitId+"'.");
+			if (!indicesTokens.containsKey(BaseDataUnitId)){
+				logger.warn("An error in data was found: Cannot find start offset of base data unit '"+BaseDataUnitId+"'.");
+			}
+			if (!indicesTokens.containsKey(BaseDataUnitId)){
+				logger.warn("An error in data was found: Cannot find end offset of base data unit '"+BaseDataUnitId+"'.");
+			}
 			return(null);
 		}		
 	}
