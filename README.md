@@ -69,7 +69,7 @@ or
 
 ```xml
 <exporter name="MMAX2Exporter" path="PATH_TO_CORPUS">
-  <property key="PROPERTY_NAME">PROPERTY_VALUE</key>
+  <property key="PROPERTY_NAME">PROPERTY_VALUE</property>
 </exporter>
 ```
 
