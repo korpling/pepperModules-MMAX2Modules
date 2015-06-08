@@ -66,14 +66,12 @@ public class MMAX2Exporter extends PepperExporterImpl implements PepperExporter 
 			e1.printStackTrace();
 		}
 		
-		this.corpus = new SaltExtendedCorpusFactory(documentBuilder).newEmptyCorpus(new File(this.getCorpusDesc().getCorpusPath().toFileString()));
+		this.corpus = new SaltExtendedCorpusFactory(documentBuilder).newEmptyCorpus(this.getCorpusDesc().getCorpusPath().toFileString());
 		this.schemeFactory = new SchemeFactory(this.corpus, documentBuilder);
 		this.documentFactory = new SaltExtendedDocumentFactory(this.corpus,documentBuilder);
 		
-		String ressourcePath = this.getResources().toFileString();
-		ressourcePath = ressourcePath.concat(File.separator).concat("dtd");
 		try {
-			SaltExtendedFileGenerator.initializeCorpus(this.corpus, ressourcePath);
+			SaltExtendedFileGenerator.initializeCorpus(this.corpus);
 		} catch (IOException e) {
 			throw new PepperModuleException(this, "", e);
 		} catch (MMAX2WrapperException e) {

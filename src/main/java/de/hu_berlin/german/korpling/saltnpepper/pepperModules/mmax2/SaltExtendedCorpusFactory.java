@@ -47,7 +47,7 @@ public class SaltExtendedCorpusFactory extends CorpusFactory{
 		if (path== null)
 			throw new SaltExtendedMMAX2WrapperException("Path to corpus was not found.");
 		Corpus baseCorpus = super.getCorpus(path);
-		String saltInfoPath = path + File.separator + SaltExtendedMmax2Infos.SALT_INFO_FOLDER;
+		String saltInfoPath = SaltExtendedMmax2Infos.SALT_INFO_FOLDER;
 
 		SaltExtendedCorpus corpus = newCorpus(baseCorpus.getCorpusPath(),
 											  baseCorpus.getBaseDataPath(), 
@@ -55,7 +55,7 @@ public class SaltExtendedCorpusFactory extends CorpusFactory{
 											  baseCorpus.getSchemesPath(), 
 											  baseCorpus.getStylesPath(),
 											  baseCorpus.getCustomizationsPath(),
-											  new File(saltInfoPath));
+											  saltInfoPath);
 		for(Scheme scheme: baseCorpus.getSchemes()){
 			corpus.addScheme(scheme);
 		}
@@ -67,14 +67,14 @@ public class SaltExtendedCorpusFactory extends CorpusFactory{
 	 * @param corpusPath The root path of the corpus
 	 * @return A new empty corpus
 	 */
-	public SaltExtendedCorpus newEmptyCorpus(File corpusPath){
-		String baseDataPath = corpusPath.toString() + File.separator + Mmax2Infos.DOCUMENT_BASEDATA_FOLDER;
-		String markablesPath = corpusPath.toString() + File.separator + Mmax2Infos.MARKABLES_FOLDER;
-		String schemesPath = corpusPath.toString() + File.separator + Mmax2Infos.SCHEMES_FOLDER;
-		String stylesPath = corpusPath.getAbsolutePath() + File.separator + Mmax2Infos.STYLES_FOLDER;
-		String customizationsPath = corpusPath.getAbsolutePath() + File.separator + Mmax2Infos.CUSTOMIZATIONS_FOLDER;
-		String saltInfoPath = corpusPath.toString() + File.separator + SaltExtendedMmax2Infos.SALT_INFO_FOLDER;
-		return newCorpus(corpusPath, new File(baseDataPath),new File(markablesPath),new File(schemesPath),new File(stylesPath),new File(customizationsPath), new File(saltInfoPath));
+	public SaltExtendedCorpus newEmptyCorpus(String corpusPath){
+		String baseDataPath = Mmax2Infos.DOCUMENT_BASEDATA_FOLDER;
+		String markablesPath = Mmax2Infos.MARKABLES_FOLDER;
+		String schemesPath = Mmax2Infos.SCHEMES_FOLDER;
+		String stylesPath = Mmax2Infos.STYLES_FOLDER;
+		String customizationsPath = Mmax2Infos.CUSTOMIZATIONS_FOLDER;
+		String saltInfoPath = SaltExtendedMmax2Infos.SALT_INFO_FOLDER;
+		return newCorpus(corpusPath, baseDataPath,markablesPath,schemesPath,stylesPath,customizationsPath,saltInfoPath);
 	}
 	
 	/**
@@ -88,7 +88,7 @@ public class SaltExtendedCorpusFactory extends CorpusFactory{
 	 * @param saltInfoPath
 	 * @return A new empty corpus
 	 */
-	public SaltExtendedCorpus newCorpus(File corpusPath, File baseDataPath,File markablesPath,File schemesPath, File stylesPath, File customizationsPath, File saltInfoPath){
+	public SaltExtendedCorpus newCorpus(String corpusPath, String baseDataPath,String markablesPath,String schemesPath, String stylesPath, String customizationsPath, String saltInfoPath){
 		return new SaltExtendedCorpus(corpusPath, baseDataPath,markablesPath,schemesPath,stylesPath,customizationsPath,saltInfoPath);
 	}
 	
@@ -98,9 +98,9 @@ public class SaltExtendedCorpusFactory extends CorpusFactory{
 	 *
 	 */
 	public class SaltExtendedCorpus extends Corpus{
-		private File saltInfoPath; // the path of the folder containing the salt informations
+		private String saltInfoPath; // the path of the folder containing the salt informations
 		
-		protected SaltExtendedCorpus(File corpusPath, File baseDataPath, File markablesPath, File schemesPath, File stylesPath, File customizationsPath,File saltInfoPath) {		
+		protected SaltExtendedCorpus(String corpusPath, String baseDataPath, String markablesPath, String schemesPath, String stylesPath, String customizationsPath,String saltInfoPath) {		
 			super(corpusPath,baseDataPath, markablesPath,schemesPath,stylesPath,customizationsPath);
 			this.saltInfoPath = saltInfoPath;
 		}
@@ -140,7 +140,7 @@ public class SaltExtendedCorpusFactory extends CorpusFactory{
 		 * Returns the path to the folder containing the Salt informations 
 		 * @return
 		 */
-		public File getSaltInfoPath() {
+		public String getSaltInfoPath() {
 			return saltInfoPath;
 		}
 	}

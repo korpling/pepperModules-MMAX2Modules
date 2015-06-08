@@ -51,7 +51,7 @@ public class SaltExtendedDocumentFactory extends DocumentFactory {
 	 * @param documentId The id of the document to parse
 	 * @return An object representing an Mmmax2 document enhanced with SAlt information
 	 */
-	public SaltExtendedDocument getNewDocument(String documentId) throws MMAX2WrapperException, SAXException, IOException{
+	public SaltExtendedDocument getDocument(String documentId) throws MMAX2WrapperException, SAXException, IOException{
 		if(this.documentBuilder == null)
 			throw new MMAX2WrapperException("To use function 'getNewDocument' a DocumentBuilder needs to be provided at instantiation");
 		
@@ -68,7 +68,7 @@ public class SaltExtendedDocumentFactory extends DocumentFactory {
 		
 		ArrayList<SaltExtendedMarkable> markables = new ArrayList<SaltExtendedMarkable>();
 		
-		File saltInfoFile = new File(this.corpus.getSaltInfoPath() + File.separator + documentId + SaltExtendedMmax2Infos.SALT_INFO_FILE_ENDING);	
+		File saltInfoFile = new File(this.corpus.getCorpusPath() + File.separator + this.corpus.getSaltInfoPath() + File.separator + documentId + SaltExtendedMmax2Infos.SALT_INFO_FILE_ENDING);	
 		Hashtable<String, Hashtable <String,String>> saltInfos = new Hashtable<String, Hashtable<String,String>>();
 		if(saltInfoFile.exists()){
 			NodeList nodes = this.documentBuilder.parse(saltInfoFile).getDocumentElement().getChildNodes();
@@ -143,7 +143,7 @@ public class SaltExtendedDocumentFactory extends DocumentFactory {
 			}
 			String nonClaimedStypesStr = "";
 			for(String nonClaimedStypeStr: nonClaimedStypes.keySet()){
-				nonClaimedStypesStr += ","+nonClaimedStypeStr;
+				nonClaimedStypesStr += ", "+nonClaimedStypeStr;
 			}
 			
 			throw new SaltExtendedMMAX2WrapperException("Data corruption: SaltInfos have not been all reimported "+saltInfos.size()+" informations of stypes "+nonClaimedStypesStr.substring(1)+" are non claimed...");
