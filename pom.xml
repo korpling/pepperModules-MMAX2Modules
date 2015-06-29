@@ -63,15 +63,11 @@
       <version>3.0</version>
       <scope>provided</scope>
     </dependency>
-    <!--
-    	run command:
-    	mvn install:install-file -Dfile=./lib/mmax2wrapper.jar -DgroupId=eurac.commul.annotations.mmax2wrapper  -DartifactId=mmax2wrapper -Dversion=1.0 -Dpackaging=jar
-    -->
+
     <dependency>
       <groupId>eurac.commul.annotations</groupId>
       <artifactId>mmax2wrapper</artifactId>
       <version>1.0</version>
-      <scope>provided</scope>
       <type>jar</type>
     </dependency>
   </dependencies>
@@ -124,6 +120,9 @@
             <Embed-Dependency>mmax2wrapper,commons-lang3</Embed-Dependency>
             <Bundle-ClassPath>.,{maven-dependencies} </Bundle-ClassPath>
             <Include-Resource> {maven-resources}, {maven-dependencies}, LICENSE, NOTICE</Include-Resource>
+            <_exportcontents>
+              eurac.commul.annotations.mmax2wrapper
+            </_exportcontents>
           </instructions>
         </configuration>
       </plugin>

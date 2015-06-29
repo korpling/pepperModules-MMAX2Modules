@@ -21,8 +21,6 @@ import java.io.File;
 import java.util.ArrayList;
 
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-
 import org.eclipse.emf.common.util.URI;
 import org.osgi.service.component.annotations.Component;
 

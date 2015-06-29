@@ -745,7 +745,7 @@ public class Salt2MMAX2Mapper extends PepperMapperImpl
 		SaltExtendedMarkable containerMarkable = null;
 		// the mapping of attributes is done here
 		SAnnotationMapping validated = matchSNode(annotation,sLayers);
-		if(validated != null){		
+		if(validated != null){
 			containerMarkable = getSContainerMarkable(sELem,validated.getAssociatedSchemeName(),span,sName,sId,idRef,schemeBaseName);
 			String attributeContainerName = validated.getAssociatedAttributeName();
 			if(containerMarkable.getAttribute(attributeContainerName) != null){
@@ -759,7 +759,7 @@ public class Salt2MMAX2Mapper extends PepperMapperImpl
 			addFreetextAttribute(markable,schemeName,"container_scheme",validated.getAssociatedSchemeName());
 			addFreetextAttribute(markable,schemeName,"container_attr",validated.getAssociatedAttributeName());
 		}else{
-			addPointerAttribute(markable,schemeName,schemeBaseName,"target_markable",idRef);
+			addFreetextAttribute(markable,schemeName,"target_markable",idRef);
 			addFreetextAttribute(markable,schemeName,"value",attributeValue);
 		}
 		

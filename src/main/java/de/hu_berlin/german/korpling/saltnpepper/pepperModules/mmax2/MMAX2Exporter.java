@@ -17,7 +17,6 @@
  */
 package de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
