@@ -1265,4 +1265,3 @@ public class MMAX22SaltMapper extends PepperMapperImpl
 		return newSId;
 	}
 }
-

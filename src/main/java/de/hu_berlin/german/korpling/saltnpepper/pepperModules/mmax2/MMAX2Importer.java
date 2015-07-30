@@ -57,6 +57,8 @@ public class MMAX2Importer extends PepperImporterImpl implements PepperImporter
 		
 		//setting name of module
 		setName("MMAX2Importer");
+		setSupplierHomepage(URI.createURI("https://github.com/korpling/pepperModules-MMAX2Modules"));
+		setDesc("The MMAX2Importer maps files produced by the MMAX2 tool to a Salt model.");
 		//set list of formats supported by this module
 		addSupportedFormat("mmax2", "1.0", null);
 	}
