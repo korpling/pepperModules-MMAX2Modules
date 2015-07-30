@@ -21,8 +21,6 @@ import java.io.File;
 import java.util.ArrayList;
 
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-
 import org.eclipse.emf.common.util.URI;
 import org.osgi.service.component.annotations.Component;
 
@@ -138,7 +136,7 @@ public class MMAX2Importer extends PepperImporterImpl implements PepperImporter
 		if (sElementId.getSIdentifiableElement() instanceof SDocument){
 			SDocument sDocument= (SDocument) sElementId.getSIdentifiableElement();
 			try {
-				SaltExtendedDocument extendedDocument= this.saltExtendedDocumentFactory.getNewDocument(sDocument.getSName());
+				SaltExtendedDocument extendedDocument= this.saltExtendedDocumentFactory.getDocument(sDocument.getSName());
 				mapper.setDocument(extendedDocument);
 			} catch (Exception e) {
 				throw new PepperModuleException(this, "Cannot create mmax2 document for SDocument '"+sElementId.getSId()+"' because of nested exception.", e);

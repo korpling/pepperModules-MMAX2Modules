@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <artifactId>pepperModules-MMAX2Modules</artifactId>
-  <version>1.0.2-SNAPSHOT</version>
+  <version>1.0.3-SNAPSHOT</version>
   <packaging>bundle</packaging>
   <description>With MMAX2Modules, we provide a PepperModules which imports data coming from MMAX2 (see: http://www.mmax2.net/) into a Salt model and to export data coming from a Salt model to MMAX2 format.</description>
   <url>https://korpling.german.hu-berlin.de/p/projects/peppermodules-mmax2modules</url>
@@ -28,6 +28,17 @@
       <name>korpling maven repo</name>
       <url>http://korpling.german.hu-berlin.de/maven2</url>
     </repository>
+     <repository>
+         <id>bitbucket_mmax_wrapper</id>
+         <name>Mmax2 Wrapper Git repository</name>
+         <releases>
+                 <enabled>true</enabled>
+         </releases>
+         <snapshots>
+                 <enabled>false</enabled>
+         </snapshots>
+         <url>https://api.bitbucket.org/1.0/repositories/commul/annotation.mmax2_java_wrapper/raw/master</url>
+      </repository>
   </repositories>
   <scm>
   	<connection>scm:git:git://github.com/korpling/pepperModules-MMAX2Modules.git</connection>
@@ -39,18 +50,22 @@
     <artifactId>pepper-parentModule</artifactId>
     <version>2.1.2</version>
   </parent>
+	<pluginRepositories>
+	  <pluginRepository>
+	    <id>synergian-repo</id>
+	    <url>https://raw.github.com/synergian/wagon-git/releases</url>
+	  </pluginRepository>
+	</pluginRepositories>	
   <dependencies>
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
       <version>3.0</version>
+      <scope>provided</scope>
     </dependency>
-    <!--
-    	run command:
-    	mvn install:install-file -Dfile=./lib/mmax2wrapper.jar -DgroupId=eurac.commul.annotations.mmax2wrapper  -DartifactId=mmax2wrapper -Dversion=1.0 -Dpackaging=jar
-    -->
+
     <dependency>
-      <groupId>eurac.commul.annotations.mmax2wrapper</groupId>
+      <groupId>eurac.commul.annotations</groupId>
       <artifactId>mmax2wrapper</artifactId>
       <version>1.0</version>
       <type>jar</type>
@@ -102,13 +117,23 @@
             <Bundle-Version>${project.version}</Bundle-Version>
             <Bundle-RequiredExecutionEnvironment>JavaSE-${java.version}</Bundle-RequiredExecutionEnvironment>
             <Service-Component>${allServiceComponents}</Service-Component>
-            <Bundle-ClassPath>.,{maven-dependencies},lib/commons-lang3-3.0.jar <!-- , lib/mmax2wrapper.jar --></Bundle-ClassPath>
-            <Include-Resource>{maven-resources}, {maven-dependencies}<!-- , lib/mmax2wrapper.jar=lib/mmax2wrapper.jar -->, lib/commons-lang3-3.0.jar=commons-lang3-3.0.jar, LICENSE, NOTICE</Include-Resource>
+            <Embed-Dependency>mmax2wrapper,commons-lang3</Embed-Dependency>
+            <Bundle-ClassPath>.,{maven-dependencies} </Bundle-ClassPath>
+            <Include-Resource> {maven-resources}, {maven-dependencies}, LICENSE, NOTICE</Include-Resource>
+            <_exportcontents>
+              eurac.commul.annotations.mmax2wrapper
+            </_exportcontents>
           </instructions>
         </configuration>
       </plugin>
       <!-- end: creation of bundle jar -->
-      <!-- end: creation of bundle jar -->
     </plugins>
+  <extensions>
+    <extension>
+      <groupId>ar.com.synergian</groupId>
+      <artifactId>wagon-git</artifactId>
+      <version>0.2.5</version>
+    </extension>
+  </extensions>
   </build>
 </project>

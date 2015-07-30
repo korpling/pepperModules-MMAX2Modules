@@ -48,10 +48,10 @@ public class SaltExtendedFileGenerator extends FileGenerator {
 	 * @throws IOException
 	 * @throws ParserConfigurationException
 	 */
-	public static void createCorpus(SaltExtendedCorpus corpus, String ressourcePath) throws IOException, ParserConfigurationException, MMAX2WrapperException {   
-		FileGenerator.outputCorpus(corpus, ressourcePath);
+	public static void createCorpus(SaltExtendedCorpus corpus) throws IOException, ParserConfigurationException, MMAX2WrapperException {   
+		FileGenerator.outputCorpus(corpus);
 		
-		File saltInfosDirectory = corpus.getSaltInfoPath();
+		File saltInfosDirectory = new File (corpus.getCorpusPath()+ File.separator + corpus.getSaltInfoPath());
 		if (!saltInfosDirectory.mkdirs()){ 
 			throw new PepperModuleException("create folder for SaltInfo '"+saltInfosDirectory.getAbsolutePath()+"'");
 		}
@@ -61,11 +61,11 @@ public class SaltExtendedFileGenerator extends FileGenerator {
 		}
 	}
 	
-	public static void initializeCorpus(SaltExtendedCorpus corpus, String ressourcePa) throws IOException, MMAX2WrapperException
+	public static void initializeCorpus(SaltExtendedCorpus corpus) throws IOException, MMAX2WrapperException
 	{   
-		FileGenerator.initializeCorpus(corpus, ressourcePa);
+		FileGenerator.initializeCorpus(corpus);
 		
-		File saltInfosDirectory = corpus.getSaltInfoPath();
+		File saltInfosDirectory = new File (corpus.getCorpusPath()+ File.separator + corpus.getSaltInfoPath());
 		if (!saltInfosDirectory.mkdirs()){ 
 			throw new PepperModuleException("create folder for SaltInfo '"+saltInfosDirectory.getAbsolutePath()+"'");
 		}
@@ -83,7 +83,7 @@ public class SaltExtendedFileGenerator extends FileGenerator {
 	}
 	
 	private static void createSaltInfoFile(SaltExtendedDocument document) throws IOException, MMAX2WrapperException{
-		OutputXmlFile(document.getFactory().getCorpus().getSaltInfoPath().getAbsolutePath() + File.separator + document.getDocumentId() + SaltExtendedMmax2Infos.SALT_INFO_FILE_ENDING,
+		OutputXmlFile(document.getFactory().getCorpus().getCorpusPath() + File.separator + document.getFactory().getCorpus().getSaltInfoPath() + File.separator + document.getDocumentId() + SaltExtendedMmax2Infos.SALT_INFO_FILE_ENDING,
 				createSaltInfoFileString(document));
 	}
 	

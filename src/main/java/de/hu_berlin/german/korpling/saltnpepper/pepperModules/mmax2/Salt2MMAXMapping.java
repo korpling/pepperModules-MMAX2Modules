@@ -37,7 +37,6 @@ import org.xml.sax.SAXException;
 
 import de.hu_berlin.german.korpling.saltnpepper.pepper.modules.exceptions.PepperModuleException;
 import de.hu_berlin.german.korpling.saltnpepper.salt.saltCore.SAbstractAnnotation;
-import de.hu_berlin.german.korpling.saltnpepper.salt.saltCore.SAnnotation;
 import de.hu_berlin.german.korpling.saltnpepper.salt.saltCore.SDATATYPE;
 import de.hu_berlin.german.korpling.saltnpepper.salt.saltCore.SLayer;
 import de.hu_berlin.german.korpling.saltnpepper.salt.saltCore.SRelation;
@@ -637,7 +636,6 @@ class SAnnotationMapping{
 	}
 			
 	public boolean isMatched(SAbstractAnnotation sannotation, EList<SLayer> sLayers) {
-		System.out.println("Trying to map '"+sannotation+"' with "+this.associatedSchemeName+" and "+this.associatedAttributeName);
 		boolean answer = this.condition.isMatched(sannotation,sLayers);
 		return answer;
 	}
