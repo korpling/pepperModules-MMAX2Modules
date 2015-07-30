@@ -20,11 +20,12 @@ inside the folders plugins or lib.
 This project includes:
   carrot-osgi-anno-scr-core under The BSD License
   carrot-osgi-anno-scr-make under The BSD License
+  Commons IO under The Apache Software License, Version 2.0
   Commons Lang under The Apache Software License, Version 2.0
+  eurac.commul.annotations:mmax2wrapper under not licensed
   Guava: Google Core Libraries for Java under The Apache Software License, Version 2.0
   Hamcrest Core under New BSD License
   JUnit under Common Public License Version 1.0
-  mmax2wrapper under not licensed
   Neo Visionaries Internationalization Package under The Apache Software License, Version 2.0
   org.eclipse.emf under The Eclipse Public License Version 1.0
   org.eclipse.emf.ecore under The Eclipse Public License Version 1.0
