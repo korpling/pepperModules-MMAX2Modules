@@ -25,6 +25,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.eclipse.emf.common.util.URI;
 import org.osgi.service.component.annotations.Component;
 
 import de.hu_berlin.german.korpling.saltnpepper.pepper.modules.PepperExporter;
@@ -54,6 +55,8 @@ public class MMAX2Exporter extends PepperExporterImpl implements PepperExporter 
 		// setting name of module
 		setName("MMAX2Exporter");
 		setProperties(new MMAX2ExporterProperties());
+		setSupplierHomepage(URI.createURI("https://github.com/korpling/pepperModules-MMAX2Modules"));
+		setDesc("The MMAX2Exporter maps a Salt model to the MMAX2 format.");
 		// set list of formats supported by this module
 		this.addSupportedFormat("mmax2", "1.0", null);
 	}
