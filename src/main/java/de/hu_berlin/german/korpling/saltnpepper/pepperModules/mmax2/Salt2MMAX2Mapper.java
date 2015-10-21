@@ -53,15 +53,15 @@ import de.hu_berlin.german.korpling.saltnpepper.salt.saltCore.SMetaAnnotatableEl
 import de.hu_berlin.german.korpling.saltnpepper.salt.saltCore.SMetaAnnotation;
 import de.hu_berlin.german.korpling.saltnpepper.salt.saltCore.SNode;
 import de.hu_berlin.german.korpling.saltnpepper.salt.saltCore.SRelation;
-import eurac.commul.annotations.mmax2wrapper.MMAX2WrapperException;
-import eurac.commul.annotations.mmax2wrapper.SchemeFactory;
-import eurac.commul.annotations.mmax2wrapper.SchemeFactory.MarkableAttributeFactory;
-import eurac.commul.annotations.mmax2wrapper.SchemeFactory.MarkableAttributeFactory.MarkableAttribute;
-import eurac.commul.annotations.mmax2wrapper.SchemeFactory.MarkableFreetextAttributeFactory;
-import eurac.commul.annotations.mmax2wrapper.SchemeFactory.MarkableNominalAttributeFactory;
-import eurac.commul.annotations.mmax2wrapper.SchemeFactory.MarkablePointerAttributeFactory;
-import eurac.commul.annotations.mmax2wrapper.SchemeFactory.MarkableSetAttributeFactory;
-import eurac.commul.annotations.mmax2wrapper.SchemeFactory.Scheme;
+import edu.eurac.commul.annotations.mmax2.mmax2wrapper.MMAX2WrapperException;
+import edu.eurac.commul.annotations.mmax2.mmax2wrapper.SchemeFactory;
+import edu.eurac.commul.annotations.mmax2.mmax2wrapper.SchemeFactory.MarkableAttributeFactory;
+import edu.eurac.commul.annotations.mmax2.mmax2wrapper.SchemeFactory.MarkableAttributeFactory.MarkableAttribute;
+import edu.eurac.commul.annotations.mmax2.mmax2wrapper.SchemeFactory.MarkableFreetextAttributeFactory;
+import edu.eurac.commul.annotations.mmax2.mmax2wrapper.SchemeFactory.MarkableNominalAttributeFactory;
+import edu.eurac.commul.annotations.mmax2.mmax2wrapper.SchemeFactory.MarkablePointerAttributeFactory;
+import edu.eurac.commul.annotations.mmax2.mmax2wrapper.SchemeFactory.MarkableSetAttributeFactory;
+import edu.eurac.commul.annotations.mmax2.mmax2wrapper.SchemeFactory.Scheme;
 
 
 /**
@@ -748,10 +748,12 @@ public class Salt2MMAX2Mapper extends PepperMapperImpl
 		if(validated != null){
 			containerMarkable = getSContainerMarkable(sELem,validated.getAssociatedSchemeName(),span,sName,sId,idRef,schemeBaseName);
 			String attributeContainerName = validated.getAssociatedAttributeName();
-			if(containerMarkable.getAttribute(attributeContainerName) != null){
-				throw new PepperModuleException(this, "Matched markable '"+markable+"' has already an attribute '"+attributeContainerName+"'");
+			if(!attributeContainerName.equals("@none")){
+				if(containerMarkable.getAttribute(attributeContainerName) != null){
+					throw new PepperModuleException(this, "Matched markable '"+markable+"' has already an attribute '"+attributeContainerName+"'");
+				}
+				addFreetextAttribute(containerMarkable,validated.getAssociatedSchemeName(),attributeContainerName,attributeValue);
 			}
-			addFreetextAttribute(containerMarkable,validated.getAssociatedSchemeName(),attributeContainerName,attributeValue);
 		}
 		
 		if(containerMarkable != null){

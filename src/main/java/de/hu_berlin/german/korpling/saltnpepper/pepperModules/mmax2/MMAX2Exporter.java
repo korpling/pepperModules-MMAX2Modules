@@ -33,8 +33,8 @@ import de.hu_berlin.german.korpling.saltnpepper.pepper.modules.exceptions.Pepper
 import de.hu_berlin.german.korpling.saltnpepper.pepper.modules.impl.PepperExporterImpl;
 import de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2.SaltExtendedCorpusFactory.SaltExtendedCorpus;
 import de.hu_berlin.german.korpling.saltnpepper.salt.saltCore.SElementId;
-import eurac.commul.annotations.mmax2wrapper.MMAX2WrapperException;
-import eurac.commul.annotations.mmax2wrapper.SchemeFactory;
+import edu.eurac.commul.annotations.mmax2.mmax2wrapper.MMAX2WrapperException;
+import edu.eurac.commul.annotations.mmax2.mmax2wrapper.SchemeFactory;
 
 /**
  * This class exports data from Salt to the MMAX2 format. The code has been

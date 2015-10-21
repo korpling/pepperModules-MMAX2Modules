@@ -32,10 +32,10 @@ import org.xml.sax.SAXException;
 import de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2.SaltExtendedCorpusFactory.SaltExtendedCorpus;
 import de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2.SaltExtendedMarkableFactory.SaltExtendedMarkable;
 import de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2.exceptions.SaltExtendedMMAX2WrapperException;
-import eurac.commul.annotations.mmax2wrapper.DocumentFactory;
-import eurac.commul.annotations.mmax2wrapper.MMAX2WrapperException;
-import eurac.commul.annotations.mmax2wrapper.MarkableFactory.Markable;
-import eurac.commul.annotations.mmax2wrapper.SchemeFactory.Scheme;
+import edu.eurac.commul.annotations.mmax2.mmax2wrapper.DocumentFactory;
+import edu.eurac.commul.annotations.mmax2.mmax2wrapper.MMAX2WrapperException;
+import edu.eurac.commul.annotations.mmax2.mmax2wrapper.MarkableFactory.Markable;
+import edu.eurac.commul.annotations.mmax2.mmax2wrapper.SchemeFactory.Scheme;
 
 /**
  * @author Lionel Nicolas
