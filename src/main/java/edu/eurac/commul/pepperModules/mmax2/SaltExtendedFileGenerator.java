@@ -15,7 +15,7 @@
  *
  *
  */
-package de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2;
+package edu.eurac.commul.pepperModules.mmax2;
 
 import java.io.File;
 import java.io.IOException;
@@ -27,12 +27,12 @@ import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.corpus_tools.pepper.modules.exceptions.PepperModuleException;
 
-import de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2.SaltExtendedCorpusFactory.SaltExtendedCorpus;
-import de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2.SaltExtendedDocumentFactory.SaltExtendedDocument;
-import de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2.SaltExtendedMarkableFactory.SaltExtendedMarkable;
-import de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2.SaltExtendedMarkableFactory.SaltExtendedMarkableContainer;
 import edu.eurac.commul.annotations.mmax2.mmax2wrapper.FileGenerator;
 import edu.eurac.commul.annotations.mmax2.mmax2wrapper.MMAX2WrapperException;
+import edu.eurac.commul.pepperModules.mmax2.SaltExtendedCorpusFactory.SaltExtendedCorpus;
+import edu.eurac.commul.pepperModules.mmax2.SaltExtendedDocumentFactory.SaltExtendedDocument;
+import edu.eurac.commul.pepperModules.mmax2.SaltExtendedMarkableFactory.SaltExtendedMarkable;
+import edu.eurac.commul.pepperModules.mmax2.SaltExtendedMarkableFactory.SaltExtendedMarkableContainer;
  
 /**
  * This class aims at dealing with the outputting to files of a Mmax Corpus enhanced with Salt information

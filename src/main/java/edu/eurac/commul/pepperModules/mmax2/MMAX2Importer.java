@@ -15,7 +15,7 @@
  *
  *
  */
-package de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2;
+package edu.eurac.commul.pepperModules.mmax2;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -35,8 +35,8 @@ import org.corpus_tools.salt.graph.Identifier;
 import org.eclipse.emf.common.util.URI;
 import org.osgi.service.component.annotations.Component;
 
-import de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2.SaltExtendedCorpusFactory.SaltExtendedCorpus;
-import de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2.SaltExtendedDocumentFactory.SaltExtendedDocument;
+import edu.eurac.commul.pepperModules.mmax2.SaltExtendedCorpusFactory.SaltExtendedCorpus;
+import edu.eurac.commul.pepperModules.mmax2.SaltExtendedDocumentFactory.SaltExtendedDocument;
 
 
 /**

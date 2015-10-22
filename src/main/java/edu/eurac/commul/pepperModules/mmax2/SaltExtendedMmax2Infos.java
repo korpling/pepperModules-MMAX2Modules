@@ -15,7 +15,7 @@
  *
  *
  */
-package de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2;
+package edu.eurac.commul.pepperModules.mmax2;
 
 import java.util.Arrays;
 import java.util.List;

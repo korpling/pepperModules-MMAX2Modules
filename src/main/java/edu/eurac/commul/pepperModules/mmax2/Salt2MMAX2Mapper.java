@@ -15,7 +15,7 @@
  *
  *
  */
-package de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2;
+package edu.eurac.commul.pepperModules.mmax2;
 
 
 import java.util.ArrayList;
@@ -46,10 +46,6 @@ import org.corpus_tools.salt.core.SMetaAnnotation;
 import org.corpus_tools.salt.core.SNode;
 import org.corpus_tools.salt.core.SRelation;
 
-import de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2.SaltExtendedCorpusFactory.SaltExtendedCorpus;
-import de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2.SaltExtendedDocumentFactory.SaltExtendedDocument;
-import de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2.SaltExtendedMarkableFactory.SaltExtendedMarkable;
-import de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2.SaltExtendedMarkableFactory.SaltExtendedMarkableContainer;
 import edu.eurac.commul.annotations.mmax2.mmax2wrapper.MMAX2WrapperException;
 import edu.eurac.commul.annotations.mmax2.mmax2wrapper.SchemeFactory;
 import edu.eurac.commul.annotations.mmax2.mmax2wrapper.SchemeFactory.MarkableAttributeFactory;
@@ -59,6 +55,10 @@ import edu.eurac.commul.annotations.mmax2.mmax2wrapper.SchemeFactory.MarkableNom
 import edu.eurac.commul.annotations.mmax2.mmax2wrapper.SchemeFactory.MarkablePointerAttributeFactory;
 import edu.eurac.commul.annotations.mmax2.mmax2wrapper.SchemeFactory.MarkableSetAttributeFactory;
 import edu.eurac.commul.annotations.mmax2.mmax2wrapper.SchemeFactory.Scheme;
+import edu.eurac.commul.pepperModules.mmax2.SaltExtendedCorpusFactory.SaltExtendedCorpus;
+import edu.eurac.commul.pepperModules.mmax2.SaltExtendedDocumentFactory.SaltExtendedDocument;
+import edu.eurac.commul.pepperModules.mmax2.SaltExtendedMarkableFactory.SaltExtendedMarkable;
+import edu.eurac.commul.pepperModules.mmax2.SaltExtendedMarkableFactory.SaltExtendedMarkableContainer;
 
 
 /**

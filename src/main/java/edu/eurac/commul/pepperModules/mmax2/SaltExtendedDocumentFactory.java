@@ -15,7 +15,7 @@
  *
  *
  */
-package de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2;
+package edu.eurac.commul.pepperModules.mmax2;
 
 import java.io.File;
 import java.io.IOException;
@@ -29,13 +29,13 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2.SaltExtendedCorpusFactory.SaltExtendedCorpus;
-import de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2.SaltExtendedMarkableFactory.SaltExtendedMarkable;
-import de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2.exceptions.SaltExtendedMMAX2WrapperException;
 import edu.eurac.commul.annotations.mmax2.mmax2wrapper.DocumentFactory;
 import edu.eurac.commul.annotations.mmax2.mmax2wrapper.MMAX2WrapperException;
 import edu.eurac.commul.annotations.mmax2.mmax2wrapper.MarkableFactory.Markable;
 import edu.eurac.commul.annotations.mmax2.mmax2wrapper.SchemeFactory.Scheme;
+import edu.eurac.commul.pepperModules.mmax2.SaltExtendedCorpusFactory.SaltExtendedCorpus;
+import edu.eurac.commul.pepperModules.mmax2.SaltExtendedMarkableFactory.SaltExtendedMarkable;
+import edu.eurac.commul.pepperModules.mmax2.exceptions.SaltExtendedMMAX2WrapperException;
 
 /**
  * @author Lionel Nicolas
