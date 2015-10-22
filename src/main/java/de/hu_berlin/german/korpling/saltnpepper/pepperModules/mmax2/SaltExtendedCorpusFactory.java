@@ -26,11 +26,11 @@ import org.xml.sax.SAXException;
 
 import de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2.SaltExtendedDocumentFactory.SaltExtendedDocument;
 import de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2.exceptions.SaltExtendedMMAX2WrapperException;
-import eurac.commul.annotations.mmax2wrapper.CorpusFactory;
-import eurac.commul.annotations.mmax2wrapper.DocumentFactory.Document;
-import eurac.commul.annotations.mmax2wrapper.MMAX2WrapperException;
-import eurac.commul.annotations.mmax2wrapper.Mmax2Infos;
-import eurac.commul.annotations.mmax2wrapper.SchemeFactory.Scheme;
+import edu.eurac.commul.annotations.mmax2.mmax2wrapper.CorpusFactory;
+import edu.eurac.commul.annotations.mmax2.mmax2wrapper.DocumentFactory.Document;
+import edu.eurac.commul.annotations.mmax2.mmax2wrapper.MMAX2WrapperException;
+import edu.eurac.commul.annotations.mmax2.mmax2wrapper.Mmax2Infos;
+import edu.eurac.commul.annotations.mmax2.mmax2wrapper.SchemeFactory.Scheme;
 
 /**
  * 

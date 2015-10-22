@@ -31,8 +31,8 @@ import de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2.SaltExtended
 import de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2.SaltExtendedDocumentFactory.SaltExtendedDocument;
 import de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2.SaltExtendedMarkableFactory.SaltExtendedMarkable;
 import de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2.SaltExtendedMarkableFactory.SaltExtendedMarkableContainer;
-import eurac.commul.annotations.mmax2wrapper.FileGenerator;
-import eurac.commul.annotations.mmax2wrapper.MMAX2WrapperException;
+import edu.eurac.commul.annotations.mmax2.mmax2wrapper.FileGenerator;
+import edu.eurac.commul.annotations.mmax2.mmax2wrapper.MMAX2WrapperException;
  
 /**
  * This class aims at dealing with the outputting to files of a Mmax Corpus enhanced with Salt information

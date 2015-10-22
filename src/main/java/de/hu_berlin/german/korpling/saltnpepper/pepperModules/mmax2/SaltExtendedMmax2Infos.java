@@ -20,7 +20,7 @@ package de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2;
 import java.util.Arrays;
 import java.util.List;
 
-import eurac.commul.annotations.mmax2wrapper.Mmax2Infos;
+import edu.eurac.commul.annotations.mmax2.mmax2wrapper.Mmax2Infos;
 
 
 /**

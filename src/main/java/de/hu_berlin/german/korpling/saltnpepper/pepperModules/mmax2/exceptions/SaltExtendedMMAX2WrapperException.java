@@ -17,7 +17,7 @@
  */
 package de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2.exceptions;
 
-import eurac.commul.annotations.mmax2wrapper.MMAX2WrapperException;
+import edu.eurac.commul.annotations.mmax2.mmax2wrapper.MMAX2WrapperException;
 
 /**
  * @author Lionel Nicolas
