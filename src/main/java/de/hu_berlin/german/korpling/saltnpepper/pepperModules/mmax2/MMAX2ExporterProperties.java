@@ -17,8 +17,9 @@
  */
 package de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2;
 
-import de.hu_berlin.german.korpling.saltnpepper.pepper.modules.PepperModuleProperties;
-import de.hu_berlin.german.korpling.saltnpepper.pepper.modules.PepperModuleProperty;
+import org.corpus_tools.pepper.modules.PepperModuleProperties;
+import org.corpus_tools.pepper.modules.PepperModuleProperty;
+
 /**
  * Properties to customize the mapping from Salt to Mmax2 data.
  * @author Florian Zipser
