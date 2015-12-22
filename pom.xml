@@ -7,7 +7,9 @@
 		<artifactId>pepper-parentModule</artifactId>
 		<version>3.0.0</version>
 	</parent>
-	<groupId>edu.eurac.commul</groupId>
+	<!-- the groupid need to be org.corpus-tools, otherwise we cannot deploy 
+		artifact on maven central. -->
+	<!-- <groupId>edu.eurac.commul</groupId> -->
 	<artifactId>pepperModules-MMAX2Modules</artifactId>
 	<version>1.0.3-SNAPSHOT</version>
 	<packaging>bundle</packaging>
