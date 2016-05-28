@@ -1121,9 +1121,9 @@ public class MMAX22SaltMapper extends PepperMapperImpl
 			if(sRelation == null){
 				throw new PepperModuleDataException(this, "An unknow SElement is referenced within SLayerLink markable '"+markable+"'");
 			}
-			sRelation.addLayer(sLayer);
+			sLayer.addRelation(sRelation);
 		}else{
-			sNode.addLayer(sLayer);
+			sLayer.addNode(sNode);
 		}
 	}
 

@@ -103,7 +103,7 @@ public class MMAX2Importer extends PepperImporterImpl implements PepperImporter
 			sCorpus.setName(corpusPath.getName());
 					
 			this.sCorpusGraph.setName(corpusPath.getName()+"_graph");
-			sCorpus.setGraph(this.sCorpusGraph);
+			this.sCorpusGraph.addNode(sCorpus);
 			
 			ArrayList<String> documentsIds = factory.getDocumentIds(corpusUri.path());
 			if(documentsIds.size() == 0){
@@ -116,7 +116,7 @@ public class MMAX2Importer extends PepperImporterImpl implements PepperImporter
 				this.sCorpusGraph.addDocument(sCorpus, sDocument);
 				
 				SDocumentGraph sDocumentGraph = SaltFactory.createSDocumentGraph();
-				sDocument.setGraph(sDocumentGraph);
+				sDocument.setDocumentGraph(sDocumentGraph);
 			}
 			saltExtendedDocumentFactory= new SaltExtendedDocumentFactory(this.corpus,DocumentBuilderFactory.newInstance().newDocumentBuilder());
 		} catch (Exception exception) {
