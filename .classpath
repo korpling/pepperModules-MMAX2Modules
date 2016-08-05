@@ -24,7 +24,7 @@
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="/mmax2_java_wrapper/eurac/commul/annotations/mmax2wrapper/1.0/mmax2wrapper-1.0.jar"/>
+	<classpathentry kind="lib" path="/maven-repo/edu/eurac/commul/annotations/mmax2/mmax2wrapper/1.0/mmax2wrapper-1.0.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
