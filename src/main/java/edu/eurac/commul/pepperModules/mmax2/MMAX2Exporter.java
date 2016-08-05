@@ -15,7 +15,7 @@
  *
  *
  */
-package de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2;
+package edu.eurac.commul.pepperModules.mmax2;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -24,17 +24,17 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.corpus_tools.pepper.impl.PepperExporterImpl;
+import org.corpus_tools.pepper.modules.PepperExporter;
+import org.corpus_tools.pepper.modules.PepperMapper;
+import org.corpus_tools.pepper.modules.exceptions.PepperModuleException;
+import org.corpus_tools.salt.graph.Identifier;
 import org.eclipse.emf.common.util.URI;
 import org.osgi.service.component.annotations.Component;
 
-import de.hu_berlin.german.korpling.saltnpepper.pepper.modules.PepperExporter;
-import de.hu_berlin.german.korpling.saltnpepper.pepper.modules.PepperMapper;
-import de.hu_berlin.german.korpling.saltnpepper.pepper.modules.exceptions.PepperModuleException;
-import de.hu_berlin.german.korpling.saltnpepper.pepper.modules.impl.PepperExporterImpl;
-import de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2.SaltExtendedCorpusFactory.SaltExtendedCorpus;
-import de.hu_berlin.german.korpling.saltnpepper.salt.saltCore.SElementId;
 import edu.eurac.commul.annotations.mmax2.mmax2wrapper.MMAX2WrapperException;
 import edu.eurac.commul.annotations.mmax2.mmax2wrapper.SchemeFactory;
+import edu.eurac.commul.pepperModules.mmax2.SaltExtendedCorpusFactory.SaltExtendedCorpus;
 
 /**
  * This class exports data from Salt to the MMAX2 format. The code has been
@@ -100,7 +100,7 @@ public class MMAX2Exporter extends PepperExporterImpl implements PepperExporter 
 	
 	
 	@Override
-	public PepperMapper createPepperMapper(SElementId sElementId) {
+	public PepperMapper createPepperMapper(Identifier sElementId) {
 		DocumentBuilder documentBuilder;
 		try {
 			documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
@@ -109,7 +109,7 @@ public class MMAX2Exporter extends PepperExporterImpl implements PepperExporter 
 		}
 
 		Salt2MMAX2Mapper mapper = null;
-		if (sElementId.getSIdentifiableElement() != null) {
+		if (sElementId.getIdentifiableElement() != null) {
 			mapper = new Salt2MMAX2Mapper(documentBuilder,schemeFactory,documentFactory,this.sannotationMappings,this.srelationsMappings);
 		}
 		return (mapper);

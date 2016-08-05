@@ -1,121 +1,101 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <parent>
-	 <groupId>edu.eurac.commul</groupId>
-	 <artifactId>snp-parent-lnicolas</artifactId>
-	 <version>2.1.2</version>
-  </parent>
-  <artifactId>pepperModules-MMAX2Modules</artifactId>
-  <version>1.0.2</version>
-  <packaging>bundle</packaging>
-  
-  
-  <description>With MMAX2Modules, we provide a PepperModules which imports data coming from MMAX2 (see: http://www.mmax2.net/) into a Salt model and to export data coming from a Salt model to MMAX2 format.</description>
-  <url>https://korpling.german.hu-berlin.de/p/projects/peppermodules-mmax2modules</url>
-  <issueManagement>
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.corpus-tools</groupId>
+		<artifactId>pepper-parentModule</artifactId>
+		<version>3.0.0</version>
+	</parent>
+	<!-- the groupid need to be org.corpus-tools, otherwise we cannot deploy 
+		artifact on maven central. -->
+	<!-- <groupId>edu.eurac.commul</groupId> -->
+	<artifactId>pepperModules-MMAX2Modules</artifactId>
+	<version>1.0.3</version>
+	<packaging>bundle</packaging>
+	<description>With MMAX2Modules, we provide a PepperModules which imports data coming from MMAX2 (see: http://www.mmax2.net/) into a Salt model and to export data coming from a Salt model to MMAX2 format.</description>
+	<url>https://github.com/korpling/pepperModules-MMAX2Modules</url>
+	<issueManagement>
 		<system>GitHub</system>
 		<url>http://github.comm/korpling/pepperModules-MMAX2Modules/issues</url>
-  </issueManagement>
+	</issueManagement>
 	<ciManagement>
 		<system>Jenkins</system>
 		<url>https://korpling.german.hu-berlin.de/jenkins/</url>
 	</ciManagement>
-  <inceptionYear>2012</inceptionYear>
-  
-  <repositories>
-    <repository>
-      <id>korpling</id>
-      <name>korpling maven repo</name>
-      <url>http://korpling.german.hu-berlin.de/maven2</url>
-    </repository>
-    <repository>
-	       <id>commul-maven-repo-releases</id>
-	       <releases><enabled>true</enabled></releases>
-           <snapshots><enabled>false</enabled></snapshots>
-	       <url>https://api.bitbucket.org/1.0/repositories/commul/maven-repo.git/raw/releases</url>
-	   </repository>
-	   <repository>
-	       <id>commul-maven-repo-snapshots</id>
-	       <releases><enabled>false</enabled></releases>
-           <snapshots><enabled>true</enabled></snapshots>
-	       <url>https://api.bitbucket.org/1.0/repositories/commul/maven-repo.git/raw/snapshots</url>
-	   </repository> 
-  </repositories>
-  
-  <dependencies>
-    <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-lang3</artifactId>
-      <version>3.0</version>
-      <scope>provided</scope>
-    </dependency>
+	<inceptionYear>2012</inceptionYear>
 
-    <dependency>
-      <groupId>edu.eurac.commul.annotations.mmax2</groupId>
-      <artifactId>mmax2wrapper</artifactId>
-      <version>1.0</version>
-      <type>jar</type>
-    </dependency>
-  </dependencies>
-  
-   <build>
-    <plugins>
-      <!-- start: Plugin for automatic releasing -->
-      <plugin>
-        <artifactId>maven-release-plugin</artifactId>
-        <version>${maven-release-plugin.version}</version>
-        <executions>
-        	<execution>
-        		<id>default</id>
-        		<goals>
-        			<goal>perform</goal>        			
-        		</goals>
-        		<configuration>
-        			<pomFileName>pepperModules-MMAX2Modules/pom.xml</pomFileName>
-        		</configuration>
-        	</execution>
-        </executions>
-        <configuration>
-          <releaseProfiles>release</releaseProfiles>
-          <goals>package assembly:single deploy</goals>
-        </configuration>
-      </plugin>
-      <!-- start: creation of bundle jar -->
-      <plugin>
-        <groupId>org.apache.felix</groupId>
-        <artifactId>maven-bundle-plugin</artifactId>
-        <version>${maven-bundle-plugin.version}</version>
-        <extensions>true</extensions>
-        <executions>
-          <execution>
-            <phase>process-classes</phase>
-            <goals>
-              <goal>bundle</goal>
-            </goals>
-          </execution>
-        </executions>
-        <configuration>
-          <manifestLocation>${META-INF}</manifestLocation>
-          <source>${java.version}</source>
-          <target>${java.version}</target>
-          <instructions>
-            <Bundle-Name>${project.artifactId}</Bundle-Name>
-            <Bundle-SymbolicName>${project.groupId}.${project.artifactId};singleton:=true</Bundle-SymbolicName>
-            <Bundle-Version>${project.version}</Bundle-Version>
-            <Bundle-RequiredExecutionEnvironment>JavaSE-${java.version}</Bundle-RequiredExecutionEnvironment>
-            <Service-Component>${allServiceComponents}</Service-Component>
-            <Embed-Dependency>mmax2wrapper,commons-lang3</Embed-Dependency>
-            <Bundle-ClassPath>.,{maven-dependencies} </Bundle-ClassPath>
-            <Include-Resource> {maven-resources}, {maven-dependencies}, LICENSE, NOTICE</Include-Resource>
-            <_exportcontents>
-              eurac.commul.annotations.mmax2wrapper
-            </_exportcontents>
-          </instructions>
-        </configuration>
-      </plugin>
-      <!-- end: creation of bundle jar -->
-    </plugins>
-  </build>
-  
+	<repositories>
+		<repository>
+			<id>commul-maven-repo-releases</id>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+			<url>https://bitbucket.org/commul/maven-repo/raw/releases</url>
+		</repository>
+		<repository>
+			<id>commul-maven-repo-snapshots</id>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+			<url>https://bitbucket.org/commul/maven-repo/raw/snapshots/</url>
+		</repository>
+	</repositories>
+	<dependencies>
+		<dependency>
+			<groupId>edu.eurac.commul.annotations.mmax2</groupId>
+			<artifactId>mmax2wrapper</artifactId>
+			<version>1.0</version>
+			<type>jar</type>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<!-- start: creation of bundle jar -->
+			<plugin>
+				<groupId>org.apache.felix</groupId>
+				<artifactId>maven-bundle-plugin</artifactId>
+				<version>${maven-bundle-plugin.version}</version>
+				<extensions>true</extensions>
+				<executions>
+					<execution>
+						<phase>process-classes</phase>
+						<goals>
+							<goal>bundle</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<manifestLocation>${META-INF}</manifestLocation>
+					<source>${java.version}</source>
+					<target>${java.version}</target>
+					<instructions>
+						<Bundle-Name>${project.artifactId}</Bundle-Name>
+						<Bundle-SymbolicName>${project.groupId}.${project.artifactId};singleton:=true</Bundle-SymbolicName>
+						<Bundle-Version>${project.version}</Bundle-Version>
+						<Bundle-RequiredExecutionEnvironment>JavaSE-${java.version}</Bundle-RequiredExecutionEnvironment>
+						<Service-Component>${allServiceComponents}</Service-Component>
+						<Embed-Dependency>mmax2wrapper,commons-lang3</Embed-Dependency>
+						<Bundle-ClassPath>.,{maven-dependencies} </Bundle-ClassPath>
+						<Include-Resource> {maven-resources}, {maven-dependencies},
+							LICENSE, NOTICE</Include-Resource>
+						<_exportcontents>
+							eurac.commul.annotations.mmax2wrapper
+						</_exportcontents>
+					</instructions>
+				</configuration>
+			</plugin>
+			<!-- end: creation of bundle jar -->
+		</plugins>
+	</build>
+
+  <scm>
+    <tag>pepperModules-MMAX2Modules-1.0.3</tag>
+  </scm>
 </project>

@@ -15,11 +15,15 @@
  *
  *
  */
-package de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2;
+package edu.eurac.commul.pepperModules.mmax2;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -27,19 +31,17 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.lang3.StringUtils;
-import org.eclipse.emf.common.util.EList;
+import org.corpus_tools.pepper.modules.exceptions.PepperModuleException;
+import org.corpus_tools.salt.SDATATYPE;
+import org.corpus_tools.salt.core.SAbstractAnnotation;
+import org.corpus_tools.salt.core.SLayer;
+import org.corpus_tools.salt.core.SRelation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
-
-import de.hu_berlin.german.korpling.saltnpepper.pepper.modules.exceptions.PepperModuleException;
-import de.hu_berlin.german.korpling.saltnpepper.salt.saltCore.SAbstractAnnotation;
-import de.hu_berlin.german.korpling.saltnpepper.salt.saltCore.SDATATYPE;
-import de.hu_berlin.german.korpling.saltnpepper.salt.saltCore.SLayer;
-import de.hu_berlin.german.korpling.saltnpepper.salt.saltCore.SRelation;
 
 
 class Salt2MMAXMapping{
@@ -635,7 +637,7 @@ class SAnnotationMapping{
 		this.associatedAttributeName = associatedAttributeName;
 	}
 			
-	public boolean isMatched(SAbstractAnnotation sannotation, EList<SLayer> sLayers) {
+	public boolean isMatched(SAbstractAnnotation sannotation, Set<SLayer> sLayers) {
 		boolean answer = this.condition.isMatched(sannotation,sLayers);
 		return answer;
 	}
@@ -654,7 +656,7 @@ class SAnnotationMapping{
 }
 
 abstract class SAnnotationMatchCondition{
-	public abstract boolean isMatched(SAbstractAnnotation sannotation, EList<SLayer> sLayers) ;
+	public abstract boolean isMatched(SAbstractAnnotation sannotation, Set<SLayer> sLayers) ;
 }
 
 class SAnnotationStringValueMatchCondition extends SAnnotationMatchCondition{
@@ -664,22 +666,29 @@ class SAnnotationStringValueMatchCondition extends SAnnotationMatchCondition{
 		this.stringValuePattern = stringValuePattern;
 	}
 	
-	public boolean isMatched(SAbstractAnnotation sannotation, EList<SLayer> sLayers) {
+	public boolean isMatched(SAbstractAnnotation sannotation, Set<SLayer> sLayers) {
 		String stringValue = "";
-		int dataType = sannotation.getSValueType().getValue();
-		if(dataType == SDATATYPE.SBOOLEAN_VALUE){
-			stringValue = ""+ sannotation.getSValueSBOOLEAN();
-		}else if(dataType == SDATATYPE.SFLOAT_VALUE){
-			stringValue = ""+sannotation.getSValueSFLOAT();
-		}else if(dataType == SDATATYPE.SNUMERIC_VALUE){
-			stringValue = ""+sannotation.getSValueSNUMERIC();
-		}else if(dataType == SDATATYPE.STEXT_VALUE){
-			stringValue = ""+sannotation.getSValueSTEXT();
-		}else if(dataType == SDATATYPE.SURI_VALUE){
-			stringValue = ""+sannotation.getSValueSURI();
-		}else if(dataType == SDATATYPE.SOBJECT_VALUE){
-			stringValue = ""+sannotation.getSValueSOBJECT().toString();
-		}else{
+		SDATATYPE dataType = sannotation.getValueType();
+		switch (dataType) {
+		case SBOOLEAN:
+			stringValue = ""+ sannotation.getValue_SBOOLEAN();
+			break;
+		case SFLOAT:
+			stringValue = ""+sannotation.getValue_SFLOAT();
+			break;
+		case SNUMERIC:
+			stringValue = ""+sannotation.getValue_SNUMERIC();
+			break;
+		case STEXT:
+			stringValue = ""+sannotation.getValue_STEXT();
+			break;
+		case SURI:
+			stringValue = ""+sannotation.getValue_SURI();
+			break;
+		case SOBJECT:
+			stringValue = ""+sannotation.getValue_SOBJECT().toString();
+			break;
+		default:
 			throw new PepperModuleException("Unknown type of SDATATYPE '"+dataType+"'");
 		}
 		return this.stringValuePattern.matcher(stringValue).matches();
@@ -695,7 +704,7 @@ class SAnnotationAndMatchCondition extends SAnnotationMatchCondition{
 		this.subConditions = subConditions;
 	}
 	
-	public boolean isMatched(SAbstractAnnotation sannotation, EList<SLayer> sLayers) {
+	public boolean isMatched(SAbstractAnnotation sannotation, Set<SLayer> sLayers) {
 		for(SAnnotationMatchCondition scondition: this.subConditions){
 			boolean answer = scondition.isMatched(sannotation,sLayers);
 			System.out.println("Answer on "+scondition+" => "+answer);
@@ -714,7 +723,7 @@ class SAnnotationOrMatchCondition extends SAnnotationMatchCondition{
 		this.subConditions = subConditions;
 	}
 	
-	public boolean isMatched(SAbstractAnnotation sannotation, EList<SLayer> sLayers) {
+	public boolean isMatched(SAbstractAnnotation sannotation, Set<SLayer> sLayers) {
 		for(SAnnotationMatchCondition scondition: this.subConditions){
 			boolean answer = scondition.isMatched(sannotation, sLayers);
 			if(answer == true){
@@ -732,7 +741,7 @@ class SAnnotationNotMatchCondition extends SAnnotationMatchCondition{
 		this.subCondition = subCondition;
 	}
 	
-	public boolean isMatched(SAbstractAnnotation sannotation, EList<SLayer> sLayers) {
+	public boolean isMatched(SAbstractAnnotation sannotation, Set<SLayer> sLayers) {
 		return !this.subCondition.isMatched(sannotation, sLayers);
 	}
 }
@@ -744,8 +753,8 @@ class SAnnotationSNameMatchCondition extends SAnnotationMatchCondition{
 		this.sNamePattern = sNamePattern;
 	}
 	
-	public boolean isMatched(SAbstractAnnotation sannotation, EList<SLayer> sLayers){
-		return this.sNamePattern.matcher(sannotation.getSName()).matches();
+	public boolean isMatched(SAbstractAnnotation sannotation, Set<SLayer> sLayers){
+		return this.sNamePattern.matcher(sannotation.getName()).matches();
 	}
 }
 
@@ -756,7 +765,7 @@ class SAnnotationNameSpaceMatchCondition extends SAnnotationMatchCondition{
 		this.nameSpacePattern = nameSpacePattern;
 	}
 	
-	public boolean isMatched(SAbstractAnnotation sannotation, EList<SLayer> sLayers){
+	public boolean isMatched(SAbstractAnnotation sannotation, Set<SLayer> sLayers){
 		return this.nameSpacePattern.matcher(sannotation.getNamespace()).matches();
 	}
 }
@@ -768,12 +777,12 @@ class SAnnotationSLayerMatchCondition extends SAnnotationMatchCondition{
 		this.sLayerNamePattern = sLayerNamePattern;
 	}
 	
-	public boolean isMatched(SAbstractAnnotation sannotation, EList<SLayer> sLayers){
+	public boolean isMatched(SAbstractAnnotation sannotation, Set<SLayer> sLayers){
 		boolean answer = true;
 		boolean hasMatchedSomething = false;
 		for(SLayer sLayer: sLayers){
 			hasMatchedSomething = true;
-			answer = answer && this.sLayerNamePattern.matcher(sLayer.getSName()).matches();
+			answer = answer && this.sLayerNamePattern.matcher(sLayer.getName()).matches();
 		}	
 		return  hasMatchedSomething && answer;
 	}
@@ -883,10 +892,8 @@ class SRelationSTypeMatchCondition extends SRelationMatchCondition{
 	public boolean isMatched(SRelation srelation){
 		boolean answer = true;
 		boolean hasMatchedSomething = false;
-		for(String stype: srelation.getSTypes()){
-			hasMatchedSomething = true;
-			answer = answer && this.typeNamePattern.matcher(stype).matches();
-		}	
+		hasMatchedSomething = true;
+		answer = answer && this.typeNamePattern.matcher(srelation.getType()).matches();
 		return  hasMatchedSomething && answer;
 	}
 }
@@ -902,9 +909,10 @@ class SRelationSLayerMatchCondition extends SRelationMatchCondition{
 	public boolean isMatched(SRelation srelation){
 		boolean answer = true;
 		boolean hasMatchedSomething = false;
-		for(SLayer sLayer: srelation.getSLayers()){
+		for (Iterator<SLayer> it = srelation.getLayers().iterator(); it.hasNext(); ){
+			SLayer sLayer= it.next();
 			hasMatchedSomething = true;
-			answer = answer && this.sLayerNamePattern.matcher(sLayer.getSName()).matches();
+			answer = answer && this.sLayerNamePattern.matcher(sLayer.getName()).matches();
 		}	
 		return  hasMatchedSomething && answer;
 	}
@@ -918,7 +926,7 @@ class SRelationSNameMatchCondition extends SRelationMatchCondition{
 	}
 	
 	public boolean isMatched(SRelation srelation){
-		return this.sNamePattern.matcher(srelation.getSName()).matches();
+		return this.sNamePattern.matcher(srelation.getName()).matches();
 	}
 }
 
@@ -930,7 +938,7 @@ class SRelationSourceTypeMatchCondition extends SRelationMatchCondition{
 	}
 	
 	public boolean isMatched(SRelation srelation){
-		return this.sourceTypeNamePattern.matcher(srelation.getSSource().getClass().getName().substring(1)).matches();
+		return this.sourceTypeNamePattern.matcher(srelation.getSource().getClass().getName().substring(1)).matches();
 	}
 }
 
@@ -942,7 +950,7 @@ class SRelationTargetTypeMatchCondition extends SRelationMatchCondition{
 	}
 	
 	public boolean isMatched(SRelation srelation){
-		return this.targetTypeNamePattern.matcher(srelation.getSTarget().getClass().getName().substring(1)).matches();
+		return this.targetTypeNamePattern.matcher(srelation.getTarget().getClass().getName().substring(1)).matches();
 	}
 }
 

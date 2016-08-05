@@ -15,7 +15,7 @@
  *
  *
  */
-package de.hu_berlin.german.korpling.saltnpepper.pepperModules.mmax2.exceptions;
+package edu.eurac.commul.pepperModules.mmax2.exceptions;
 
 import edu.eurac.commul.annotations.mmax2.mmax2wrapper.MMAX2WrapperException;
 
