@@ -400,8 +400,9 @@ public class MMAX22SaltMapper extends PepperMapperImpl
 					if(isMetaMarkable == false){
 						SSpan sSpan = SaltFactory.createSSpan();
 						sSpan.setName(schemeName);
-						sDocumentGraph.addNode(sSpan);
 						sSpan.setId(getNewSid(schemeName));
+						
+						sDocumentGraph.addNode(sSpan);
 						registerSNode(markable,sSpan);
 
 						SAnnotation sAnnotation = SaltFactory.createSAnnotation();
@@ -410,17 +411,17 @@ public class MMAX22SaltMapper extends PepperMapperImpl
 						sAnnotation.setValue(schemeName);
 						sSpan.addAnnotation(sAnnotation);
 
-						mmaxSLayer.getNodes().add(sSpan);
-						sSpan.getLayers().add(mmaxSLayer);
+						mmaxSLayer.addNode(sSpan);
 
 						for(String baseDataUnitId: baseDateUnitIds){
+							SToken sToken = getSToken(baseDataUnitId, indicesTokens);
+							
 							SSpanningRelation sSpanRel= SaltFactory.createSSpanningRelation();
+							sSpanRel.setSource(sSpan);
+							sSpanRel.setTarget(sToken);
+							
 							sDocumentGraph.addRelation(sSpanRel);
 							mmaxSLayer.addRelation(sSpanRel);
-							sSpanRel.getLayers().add(mmaxSLayer);
-							sSpanRel.setSource(sSpan);
-							SToken sToken = getSToken(baseDataUnitId, indicesTokens);
-							sSpanRel.setTarget(sToken);
 						}
 					}else{
 						for(MarkableAttribute markableAttribute: markable.getAttributes()){
