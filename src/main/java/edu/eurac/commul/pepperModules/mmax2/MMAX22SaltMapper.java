@@ -101,7 +101,6 @@ public class MMAX22SaltMapper extends PepperMapperImpl
 		if (getDocument()== null){
 			throw new PepperModuleException(this, "Cannot start mapping, because no mmax2 document was given.");
 		}
-
 		mapSDocument(getEDocument(), getDocument());
 		return(DOCUMENT_STATUS.COMPLETED);
 	}
@@ -400,8 +399,11 @@ public class MMAX22SaltMapper extends PepperMapperImpl
 					if(isMetaMarkable == false){
 						SSpan sSpan = SaltFactory.createSSpan();
 						sSpan.setName(schemeName);
-						sDocumentGraph.addNode(sSpan);
 						sSpan.setId(getNewSid(schemeName));
+						
+						sSpan.addLayer(mmaxSLayer);
+						sDocumentGraph.addNode(sSpan);
+						mmaxSLayer.addNode(sSpan);
 						registerSNode(markable,sSpan);
 
 						SAnnotation sAnnotation = SaltFactory.createSAnnotation();
@@ -409,18 +411,16 @@ public class MMAX22SaltMapper extends PepperMapperImpl
 						sAnnotation.setName("markable_scheme");
 						sAnnotation.setValue(schemeName);
 						sSpan.addAnnotation(sAnnotation);
-
-						mmaxSLayer.getNodes().add(sSpan);
-						sSpan.getLayers().add(mmaxSLayer);
+					
 
 						for(String baseDataUnitId: baseDateUnitIds){
 							SSpanningRelation sSpanRel= SaltFactory.createSSpanningRelation();
+							sSpanRel.setSource(sSpan);	
+							sSpanRel.setTarget(getSToken(baseDataUnitId, indicesTokens));
+							
+							sSpanRel.addLayer(mmaxSLayer);
 							sDocumentGraph.addRelation(sSpanRel);
 							mmaxSLayer.addRelation(sSpanRel);
-							sSpanRel.getLayers().add(mmaxSLayer);
-							sSpanRel.setSource(sSpan);
-							SToken sToken = getSToken(baseDataUnitId, indicesTokens);
-							sSpanRel.setTarget(sToken);
 						}
 					}else{
 						for(MarkableAttribute markableAttribute: markable.getAttributes()){
@@ -489,7 +489,7 @@ public class MMAX22SaltMapper extends PepperMapperImpl
 								SNode sTarget = getSNode(targetMarkable);
 								sPointingRelation.setTarget((SStructuredNode)sTarget);
 								mmaxSLayer.addRelation(sPointingRelation);
-								sPointingRelation.getLayers().add(mmaxSLayer);
+								sPointingRelation.addLayer(mmaxSLayer);
 							}
 						}else{
 							throw new PepperModuleException("Developper error: unknown type of markable attribute '"+attributeType+"'...");
@@ -1202,7 +1202,7 @@ public class MMAX22SaltMapper extends PepperMapperImpl
 
 				sTextualDsOfToken.getGraph().addNode(sToken);	
 				for(SLayer sLayer: sTextualDsOfToken.getLayers()){
-					sLayer.getNodes().add(sToken);
+					sToken.addLayer(sLayer);
 				}
 				sTextualDsOfToken.getGraph().addRelation(sTextualRel);	
 				for(SLayer sLayer: sTextualDsOfToken.getLayers()){
