@@ -65,11 +65,6 @@ public class MMAX2Importer extends PepperImporterImpl implements PepperImporter
 		addSupportedFormat("mmax2", "1.0", null);
 	}
 	
-	/**
-	 * Stores relation between documents and their resource 
-	 */
-	private SCorpusGraph sCorpusGraph= null;
-	
 	private SaltExtendedDocumentFactory saltExtendedDocumentFactory= null;
 	
 	private SaltExtendedCorpus corpus;
@@ -89,7 +84,7 @@ public class MMAX2Importer extends PepperImporterImpl implements PepperImporter
 			throw new PepperModuleException(this, "Cannot import corpus-structure, because no corpus-path is given.");
 		
 		SCorpus sCorpus = SaltFactory.createSCorpus();
-		this.sCorpusGraph= sCorpusGraph;
+		setCorpusGraph(sCorpusGraph);
 		
 		URI corpusUri = this.getCorpusDesc().getCorpusPath();
 		try {
@@ -102,21 +97,15 @@ public class MMAX2Importer extends PepperImporterImpl implements PepperImporter
 			
 			sCorpus.setName(corpusPath.getName());
 					
-			this.sCorpusGraph.setName(corpusPath.getName()+"_graph");
-			sCorpus.setGraph(this.sCorpusGraph);
+			getCorpusGraph().setName(corpusPath.getName()+"_graph");
+			sCorpus.setGraph(getCorpusGraph());
 			
 			ArrayList<String> documentsIds = factory.getDocumentIds(corpusUri.path());
 			if(documentsIds.size() == 0){
 				throw new PepperModuleException(this, "No documents found for the corpus in '"+corpusUri.toFileString()+"'");
 			}
-			for(String documentId: documentsIds){			
-				SDocument sDocument= SaltFactory.createSDocument();
-				sDocument.setName(documentId);
-				
-				this.sCorpusGraph.addDocument(sCorpus, sDocument);
-				
-				SDocumentGraph sDocumentGraph = SaltFactory.createSDocumentGraph();
-				sDocument.setGraph(sDocumentGraph);
+			for(String documentId: documentsIds){	
+				getCorpusGraph().createDocument(sCorpus, documentId);			
 			}
 			saltExtendedDocumentFactory= new SaltExtendedDocumentFactory(this.corpus,DocumentBuilderFactory.newInstance().newDocumentBuilder());
 		} catch (Exception exception) {
