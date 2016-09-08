@@ -35,7 +35,7 @@ This project includes:
   osgi.cmpn under Apache License, Version 2.0
   osgi.core under Apache License, Version 2.0
   pepper-framework under The Apache Software License, Version 2.0
-  pepperModules-MMAX2Modules under The Apache Software License, Version 2.0
+  pepperModules-MMAX2Modules under Apache 2
   salt-api under The Apache Software License, Version 2.0
   SLF4J API Module under MIT License
   Stax2 API under The BSD License
