@@ -71,7 +71,7 @@ public class MMAX22SaltMapper extends PepperMapperImpl
 	private Hashtable<String,SLayer> sLayerHash;
 	private Hashtable<STextualDS,Integer> sTextualDsOfset;
 	private Hashtable<String,SToken> sTokensHash;
-	private Hashtable<String,Hashtable<String,SaltExtendedMarkable>> saltExtendedMarkableHash;
+	private Hashtable<String,SaltExtendedMarkable> saltExtendedMarkableHash;
 	private Hashtable<String,STextualDS> sTextualDsBaseDataUnitCorrespondance;
 	private Hashtable<SaltExtendedMarkable,SaltExtendedMarkable> claimSContainer;
 	private Hashtable<String,IdentifiableElement> saltIds;
@@ -116,7 +116,7 @@ public class MMAX22SaltMapper extends PepperMapperImpl
 		this.sLayerHash = new Hashtable<String, SLayer>();
 		this.sTextualDsOfset = new Hashtable<STextualDS, Integer>();
 		this.sTokensHash = new Hashtable<String, SToken>();
-		this.saltExtendedMarkableHash = new Hashtable<String,Hashtable<String,SaltExtendedMarkable>>();
+		this.saltExtendedMarkableHash = new Hashtable<String,SaltExtendedMarkable>();
 		this.sTextualDsBaseDataUnitCorrespondance = new Hashtable<String, STextualDS>();
 		this.claimSContainer = new Hashtable<SaltExtendedMarkable, SaltExtendedMarkable>();
 		this.saltIds = new Hashtable<String,IdentifiableElement>();
@@ -478,10 +478,9 @@ public class MMAX22SaltMapper extends PepperMapperImpl
 							for(int i = 0; i< markablePointerValues.length; i++){
 								SPointingRelation sPointingRelation = SaltFactory.createSPointingRelation();
 								sPointingRelation.setName(markableAttribute.getName());
-								sDocumentGraph.addRelation(sPointingRelation);
 								sPointingRelation.setType(markableAttribute.getName());
 								sPointingRelation.setSource(sSpan);
-
+								
 								SaltExtendedMarkable targetMarkable = getMarkable(markablePointerValues[i], factory.getTargetSchemeName());
 								if(targetMarkable == null)
 									throw new PepperModuleDataException(this, "An unknown markable of id '"+markablePointerValues[i]+"' belonging to scheme '"+factory.getTargetSchemeName()
@@ -490,6 +489,8 @@ public class MMAX22SaltMapper extends PepperMapperImpl
 								sPointingRelation.setTarget((SStructuredNode)sTarget);
 								mmaxSLayer.addRelation(sPointingRelation);
 								sPointingRelation.addLayer(mmaxSLayer);
+								
+								sDocumentGraph.addRelation(sPointingRelation);
 							}
 						}else{
 							throw new PepperModuleException("Developper error: unknown type of markable attribute '"+attributeType+"'...");
@@ -1249,20 +1250,12 @@ public class MMAX22SaltMapper extends PepperMapperImpl
 		}
 	}
 
-	private SaltExtendedMarkable registerMarkable(SaltExtendedMarkable markable){
-		String schemeName = markable.getFactory().getScheme().getName();
-		if(!this.saltExtendedMarkableHash.containsKey(schemeName)){
-			this.saltExtendedMarkableHash.put(schemeName, new Hashtable<String,SaltExtendedMarkable>());
-		}
-		return this.saltExtendedMarkableHash.get(schemeName).put(markable.getId(),markable);		
+	private void registerMarkable(SaltExtendedMarkable markable){
+		this.saltExtendedMarkableHash.put(markable.getId(),markable);
 	}
 
 	private SaltExtendedMarkable getMarkable(String markableId, String schemeName){
-		if(!this.saltExtendedMarkableHash.containsKey(schemeName)){
-			return null;
-		}else{
-			return this.saltExtendedMarkableHash.get(schemeName).get(markableId);
-		}
+		return this.saltExtendedMarkableHash.get(markableId);
 	}
 
 	private String getNewSid(String schemeName){
