@@ -8,7 +8,7 @@
    </parent>
 	<artifactId>pepperModules-MMAX2Modules</artifactId>
 	<groupId>org.corpus-tools</groupId>
-	<version>1.0.4-SNAPSHOT</version>
+	<version>1.0.4</version>
 	<packaging>bundle</packaging>
 	<description>With MMAX2Modules, we provide a PepperModules which imports data coming from MMAX2 (see: http://www.mmax2.net/) into a Salt model and to export data coming from a Salt model to MMAX2 format.</description>
 	<url>https://github.com/korpling/pepperModules-MMAX2Modules</url>
@@ -118,7 +118,7 @@
 										</goals>
 									</pluginExecutionFilter>
 									<action>
-										<ignore></ignore>
+										<ignore />
 									</action>
 								</pluginExecution>
 							</pluginExecutions>
@@ -130,6 +130,6 @@
 	</build>
 
   <scm>
-    <tag>pepperModules-MMAX2Modules-1.0.3</tag>
+    <tag>pepperModules-MMAX2Modules-1.0.4</tag>
   </scm>
 </project>
