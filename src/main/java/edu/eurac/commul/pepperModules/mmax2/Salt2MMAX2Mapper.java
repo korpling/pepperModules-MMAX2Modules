@@ -30,6 +30,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.corpus_tools.pepper.common.DOCUMENT_STATUS;
 import org.corpus_tools.pepper.impl.PepperMapperImpl;
 import org.corpus_tools.pepper.modules.exceptions.PepperModuleException;
+import org.corpus_tools.salt.common.SDocument;
 import org.corpus_tools.salt.common.SDominanceRelation;
 import org.corpus_tools.salt.common.SPointingRelation;
 import org.corpus_tools.salt.common.SSpan;
@@ -112,63 +113,6 @@ public class Salt2MMAX2Mapper extends PepperMapperImpl
 		
 	}
 	
-//	public void setAttributeMatchConditions(Hashtable<String,ArrayList<SaltAttributeMatchCondition>> conditions){
-//		this.conditions = conditions;	
-//	}
-//	
-//	public void setPointerMatchConditions(Hashtable<String,ArrayList<SaltPointerMatchCondition>> pointersConditions){
-//		this.pointersConditions = pointersConditions;	
-//	}	
-//
-//	public void setFactory(SaltExtendedDocumentFactory factory) {
-//		this.factory = factory;
-//	}
-//	
-//	public void setCorpus(SaltExtendedCorpus corpus) {
-//		this.corpus = corpus;
-//	}
-//	
-//	public void setSchemeFactory(SchemeFactory schemeFactory) {
-//		this.schemeFactory = schemeFactory;
-//	}
-//	
-//	
-//	public SchemeFactory getSchemeFactory() {
-//		return schemeFactory;
-//	}
-//	
-//	/**
-//	 * Returns the set document builder
-//	 * @return {@link DocumentBuilder} used here
-//	 */
-//	public DocumentBuilder getDocumentBuilder() {
-//		return documentBuilder;
-//	}
-//
-//	/**
-//	 * Returns the properties to be used for this mapping.
-//	 * @return properties for mapping
-//	 */
-//	public MMAX2ExporterProperties getProps() {
-//		return (MMAX2ExporterProperties)getProperties();
-//	}
-//	
-//	public SaltExtendedCorpus getCorpus() {
-//		return corpus;
-//	}
-//	public SaltExtendedDocumentFactory getFactory() {
-//		return factory;
-//	}
-//	
-//	/**
-//	 * Builds the mapper
-//	 * @param documentBuilder an Xml parser to use for parsing Xml files
-//	 * @param matchingAttributeConditionFilePath the path to the file containing the conditions for performing mapping on any SAannotations or SMetaAnnotations
-//	 * @param matchingPointerConditionFilePath the path to the file containing the conditions for performing mapping on SRelations
-//	 * @throws SAXException
-//	 * @throws IOException
-//	 */
-
 	
 	// some usefuls fonctions to create Mmax ID or record and access the mmax2 informations associated with previously created markables
 
@@ -216,7 +160,6 @@ public class Salt2MMAX2Mapper extends PepperMapperImpl
 			}else{
 				throw new PepperModuleException(this, "Developper error Unknown Type of SRelation => "+key.getClass());
 			}
-			//System.out.println("Registering "+markable+" for "+key);
 			registerSRelationMarkable(markable, key);
 		}
 		
@@ -361,7 +304,6 @@ public class Salt2MMAX2Mapper extends PepperMapperImpl
 				allSnodes.add(sToken);
 			}
 			
-			
 			for(SSpanningRelation sSpanningRelation: getDocument().getDocumentGraph().getSpanningRelations()){
 				getSRelationMarkable(sSpanningRelation);
 				allSrelations.add(sSpanningRelation);
@@ -431,33 +373,34 @@ public class Salt2MMAX2Mapper extends PepperMapperImpl
 
 	// function specialized in SDocument information
 	private void mapSDocument(int lastBaseUnitId) throws MMAX2WrapperException{
+		// The SDocument itself
+		SDocument sDoc = getDocument();
+		
 		String markableSPan =  makeSpan(1,lastBaseUnitId);
 		{
-			// The SDocument itself
 			String markableId = getNewId();
-			
 			Scheme scheme = getScheme(SaltExtendedMmax2Infos.SALT_INFO_TYPE_SDOCUMENT);
-			String sName = getDocument().getName();
-			String sId = getDocument().getId();
+			String sName = sDoc.getName();
+			String sId = sDoc.getId();
 			
 			SaltExtendedMarkable markable = getMarkable(scheme,markableId,markableSPan,SaltExtendedMmax2Infos.SALT_INFO_TYPE_SDOCUMENT,sName,sId);
 			this.document.addMarkable(markable);
 	
-			mapSMetaAnnotations(sName,sId, getDocument(), markableId,markableSPan,SaltExtendedMmax2Infos.SALT_INFO_TYPE_SDOCUMENT,null);
-			mapSAnnotations(sName,sId, getDocument(), markableId,markableSPan,SaltExtendedMmax2Infos.SALT_INFO_TYPE_SDOCUMENT,null);
+			mapSMetaAnnotations(sName,sId, sDoc, markableId,markableSPan,SaltExtendedMmax2Infos.SALT_INFO_TYPE_SDOCUMENT,null);
+			mapSAnnotations(sName,sId, sDoc, markableId,markableSPan,SaltExtendedMmax2Infos.SALT_INFO_TYPE_SDOCUMENT,null);
 		}
 		{
 			// The graph of the SDocument 
 			String markableId = getNewId();
 			Scheme scheme = getScheme(SaltExtendedMmax2Infos.SALT_INFO_TYPE_SDOCUMENT_GRAPH);
-			String sName = getDocument().getDocumentGraph().getName();
-			String sId = getDocument().getDocumentGraph().getId();
+			String sName = sDoc.getDocumentGraph().getName();
+			String sId = sDoc.getDocumentGraph().getId();
 			
 			SaltExtendedMarkable markable = getMarkable(scheme,markableId,markableSPan,SaltExtendedMmax2Infos.SALT_INFO_TYPE_SDOCUMENT_GRAPH,sName,sId);
 			this.document.addMarkable(markable);
 	
-			mapSMetaAnnotations(sName,sId, getDocument().getDocumentGraph(), markableId,markableSPan,SaltExtendedMmax2Infos.SALT_INFO_TYPE_SDOCUMENT_GRAPH,null);
-			mapSAnnotations(sName,sId, getDocument().getDocumentGraph(), markableId,markableSPan,SaltExtendedMmax2Infos.SALT_INFO_TYPE_SDOCUMENT_GRAPH,null);
+			mapSMetaAnnotations(sName,sId, sDoc.getDocumentGraph(), markableId,markableSPan,SaltExtendedMmax2Infos.SALT_INFO_TYPE_SDOCUMENT_GRAPH,null);
+			mapSAnnotations(sName,sId, sDoc.getDocumentGraph(), markableId,markableSPan,SaltExtendedMmax2Infos.SALT_INFO_TYPE_SDOCUMENT_GRAPH,null);
 		}
 	}
 	

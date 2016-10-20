@@ -37,8 +37,8 @@ public class MMAX2ExporterProperties extends PepperModuleProperties {
 	
 	public MMAX2ExporterProperties()
 	{
-		this.addProperty(new PepperModuleProperty<String>(PROP_MAPPINGS_SANNOTATIONS_FP, String.class, "???", false));
-		this.addProperty(new PepperModuleProperty<String>(PROP_MAPPINGS_SRELATIONS_FP, String.class, "???",false));
+		this.addProperty(new PepperModuleProperty<String>(PROP_MAPPINGS_SANNOTATIONS_FP, String.class, "The path to the file containing the SAnnotation mappings", false));
+		this.addProperty(new PepperModuleProperty<String>(PROP_MAPPINGS_SRELATIONS_FP, String.class, "The path to the file containing the SRelation mappings",false));
 	}
 	
 	public String getSAnnotationMappingsFilePath(){

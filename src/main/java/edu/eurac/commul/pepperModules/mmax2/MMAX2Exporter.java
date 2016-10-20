@@ -47,17 +47,18 @@ import edu.eurac.commul.pepperModules.mmax2.SaltExtendedCorpusFactory.SaltExtend
 @Component(name = "MMAX2ExporterComponent", factory = "PepperExporterComponentFactory")
 public class MMAX2Exporter extends PepperExporterImpl implements PepperExporter {
 	
-
 	public MMAX2Exporter() {
 		super();
 
 		// setting name of module
 		setName("MMAX2Exporter");
 		setProperties(new MMAX2ExporterProperties());
+		setSupplierContact(URI.createURI("lionel.nicolas@eurac.edu"));
 		setSupplierHomepage(URI.createURI("https://github.com/korpling/pepperModules-MMAX2Modules"));
 		setDesc("The MMAX2Exporter maps a Salt model to the MMAX2 format.");
+		
 		// set list of formats supported by this module
-		this.addSupportedFormat("mmax2", "1.0", null);
+		this.addSupportedFormat("mmax2", "1.0", null);			
 	}
 
 	private SaltExtendedCorpus corpus;
@@ -65,7 +66,6 @@ public class MMAX2Exporter extends PepperExporterImpl implements PepperExporter 
 	private SaltExtendedDocumentFactory documentFactory;
 	private ArrayList<SAnnotationMapping> sannotationMappings;
 	private ArrayList<SRelationMapping> srelationsMappings;
-
 	
 	@Override
 	public void exportCorpusStructure(){
@@ -73,16 +73,15 @@ public class MMAX2Exporter extends PepperExporterImpl implements PepperExporter 
 		try {
 			documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
 		} catch (ParserConfigurationException e) {
-			throw new PepperModuleException(this, "", e);
+			throw new PepperModuleException(this, "Could not create a new document builder", e);
 		}
 		
 		MMAX2ExporterProperties props = (MMAX2ExporterProperties) getProperties();
 		try {
 			this.sannotationMappings = Salt2MMAXMapping.getSAnnotationMappingsFromFile(props);
 			this.srelationsMappings = Salt2MMAXMapping.getSRelationMappingsFromFile(props);
-		} catch (Exception e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
+		} catch (Exception e) {
+			throw new PepperModuleException(this, "Could not parse mappings", e);
 		}
 		
 		this.corpus = new SaltExtendedCorpusFactory(documentBuilder).newEmptyCorpus(this.getCorpusDesc().getCorpusPath().toFileString());
@@ -92,9 +91,9 @@ public class MMAX2Exporter extends PepperExporterImpl implements PepperExporter 
 		try {
 			SaltExtendedFileGenerator.initializeCorpus(this.corpus);
 		} catch (IOException e) {
-			throw new PepperModuleException(this, "", e);
+			throw new PepperModuleException(this, "Could not init corpus", e);
 		} catch (MMAX2WrapperException e) {
-			throw new PepperModuleException(this, "", e);
+			throw new PepperModuleException(this, "Could not init corpus", e);
 		}
 	}
 	
@@ -105,7 +104,7 @@ public class MMAX2Exporter extends PepperExporterImpl implements PepperExporter 
 		try {
 			documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
 		} catch (ParserConfigurationException e) {
-			throw new PepperModuleException(this, "", e);
+			throw new PepperModuleException(this, "Could not create a document builder", e);
 		}
 
 		Salt2MMAX2Mapper mapper = null;
@@ -120,7 +119,7 @@ public class MMAX2Exporter extends PepperExporterImpl implements PepperExporter 
 		try {
 			SaltExtendedFileGenerator.finalizeCorpus(this.corpus);
 		} catch (Exception e) {
-			throw new PepperModuleException(this, "", e);
+			throw new PepperModuleException(this, "Could not finalize corpus", e);
 		} 
 	}	
 }
