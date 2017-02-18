@@ -1,16 +1,11 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>org.corpus-tools</groupId>
 		<artifactId>pepper-parentModule</artifactId>
-		<version>3.0.2</version>
+		<version>3.1.0</version>
 	</parent>
-	<!-- the groupid need to be org.corpus-tools, otherwise we cannot deploy 
-		artifact on maven central. -->
-	<!-- <groupId>edu.eurac.commul</groupId> -->
 	<artifactId>pepperModules-MMAX2Modules</artifactId>
-	<groupId>org.corpus-tools</groupId>
 	<version>1.0.7-SNAPSHOT</version>
 	<packaging>bundle</packaging>
 	<description>With MMAX2Modules, we provide a PepperModules which imports data coming from MMAX2 (see: http://www.mmax2.net/) into a Salt model and to export data coming from a Salt model to MMAX2 format.</description>
@@ -24,8 +19,7 @@
 		<url>https://korpling.german.hu-berlin.de/jenkins/</url>
 	</ciManagement>
 	<inceptionYear>2012</inceptionYear>
-  
-  <distributionManagement>
+	<distributionManagement>
 		<snapshotRepository>
 			<id>ossrh</id>
 			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
@@ -66,10 +60,8 @@
 			<type>jar</type>
 		</dependency>
 	</dependencies>
-
 	<build>
 		<plugins>
-			<!-- start: creation of bundle jar -->
 			<plugin>
 				<groupId>org.apache.felix</groupId>
 				<artifactId>maven-bundle-plugin</artifactId>
@@ -103,8 +95,6 @@
 					</instructions>
 				</configuration>
 			</plugin>
-			<!-- end: creation of bundle jar -->
 		</plugins>
-
 	</build>
 </project>
