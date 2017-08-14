@@ -480,20 +480,27 @@ public class MMAX22SaltMapper extends PepperMapperImpl
 							}
 
 							for(int i = 0; i< markablePointerValues.length; i++){
-								SPointingRelation sPointingRelation = SaltFactory.createSPointingRelation();
-								sPointingRelation.setName(markableAttribute.getName());
-								sDocumentGraph.addRelation(sPointingRelation);
-								sPointingRelation.setType(markableAttribute.getName());
-								sPointingRelation.setSource(sSpan);
 
-								SaltExtendedMarkable targetMarkable = getMarkable(markablePointerValues[i], factory.getTargetSchemeName());
-								if(targetMarkable == null)
-									throw new PepperModuleDataException(this, "An unknown markable of id '"+markablePointerValues[i]+"' belonging to scheme '"+factory.getTargetSchemeName()
-											+"' is referenced as the target of the pointer '"+markableAttribute.getName()+"' within markable '"+markable+"'");
-								SNode sTarget = getSNode(targetMarkable);
-								sPointingRelation.setTarget((SStructuredNode)sTarget);
-								mmaxSLayer.addRelation(sPointingRelation);
-								sPointingRelation.getLayers().add(mmaxSLayer);
+								if (!"empty".equals(markablePointerValues[i])) {
+
+									SPointingRelation sPointingRelation = SaltFactory.createSPointingRelation();
+									sPointingRelation.setName(markableAttribute.getName());
+									sPointingRelation.setType(markableAttribute.getName());
+									sPointingRelation.setSource(sSpan);
+
+									SaltExtendedMarkable targetMarkable = getMarkable(markablePointerValues[i], factory.getTargetSchemeName());
+									if (targetMarkable == null) {
+										throw new PepperModuleDataException(this, "An unknown markable of id '" + markablePointerValues[i] + "' belonging to scheme '" + factory.getTargetSchemeName()
+											+ "' is referenced as the target of the pointer '" + markableAttribute.getName() + "' within markable '" + markable + "'");
+									}
+									SNode sTarget = getSNode(targetMarkable);
+									sPointingRelation.setTarget((SStructuredNode) sTarget);
+
+									sDocumentGraph.addRelation(sPointingRelation);
+									if (mmaxSLayer != null) {
+										mmaxSLayer.addRelation(sPointingRelation);
+									}
+								}
 							}
 						}else{
 							throw new PepperModuleException("Developper error: unknown type of markable attribute '"+attributeType+"'...");
@@ -1259,11 +1266,19 @@ public class MMAX22SaltMapper extends PepperMapperImpl
 	}
 
 	private SaltExtendedMarkable getMarkable(String markableId, String schemeName){
-		if(!this.saltExtendedMarkableHash.containsKey(schemeName)){
-			return null;
-		}else{
+    if(schemeName == null || schemeName.isEmpty()) {
+      // search in all possible target domains
+      for(Hashtable<String,SaltExtendedMarkable> markablesForDomain : this.saltExtendedMarkableHash.values()) {
+        SaltExtendedMarkable result = markablesForDomain.get(markableId);
+        if(result != null) {
+          return result;
+        }
+      }
+    } else if (this.saltExtendedMarkableHash.containsKey(schemeName)) {
 			return this.saltExtendedMarkableHash.get(schemeName).get(markableId);
 		}
+    // if not found return null
+    return null;
 	}
 
 	private String getNewSid(String schemeName){
