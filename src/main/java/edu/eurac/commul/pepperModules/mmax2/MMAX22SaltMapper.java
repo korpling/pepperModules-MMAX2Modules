@@ -414,14 +414,17 @@ public class MMAX22SaltMapper extends PepperMapperImpl
 						mmaxSLayer.addNode(sSpan);
 
 						for(String baseDataUnitId: baseDateUnitIds){
-							SToken sToken = getSToken(baseDataUnitId, indicesTokens);
-							
-							SSpanningRelation sSpanRel= SaltFactory.createSSpanningRelation();
-							sSpanRel.setSource(sSpan);
-							sSpanRel.setTarget(sToken);
-							
-							sDocumentGraph.addRelation(sSpanRel);
-							mmaxSLayer.addRelation(sSpanRel);
+              // there might be gaps in the otherwise consecutively list of IDs, thus check if the base unit actually exists
+              if(indicesTokens.containsKey(baseDataUnitId)) {
+                SToken sToken = getSToken(baseDataUnitId, indicesTokens);
+
+                SSpanningRelation sSpanRel= SaltFactory.createSSpanningRelation();
+                sSpanRel.setSource(sSpan);
+                sSpanRel.setTarget(sToken);
+
+                sDocumentGraph.addRelation(sSpanRel);
+                mmaxSLayer.addRelation(sSpanRel);
+              }
 						}
 					}else{
 						for(MarkableAttribute markableAttribute: markable.getAttributes()){
