@@ -1153,18 +1153,15 @@ public class MMAX22SaltMapper extends PepperMapperImpl
 	// some usefuls methods
 
 	private int[] getStartAndEnd (String BaseDataUnitId, Hashtable<String,int[]> indicesTokens){
-		if ((indicesTokens.containsKey(BaseDataUnitId))&&  (indicesTokens.containsKey(BaseDataUnitId))){
+		if ((indicesTokens.containsKey(BaseDataUnitId))){
 			Integer start= indicesTokens.get(BaseDataUnitId)[0];
 			Integer end= indicesTokens.get(BaseDataUnitId)[1];
 			int[] result = {start, end};
 			return(result);
 		}
 		else{
-			if (!indicesTokens.containsKey(BaseDataUnitId))
-				throw new PepperModuleDataException(this,"An error in data was found: Cannot find start offset of base data unit '"+BaseDataUnitId+"'.");
-			if (!indicesTokens.containsKey(BaseDataUnitId))
-				throw new PepperModuleDataException(this,"An error in data was found: Cannot find end offset of base data unit '"+BaseDataUnitId+"'.");
-			return(null);
+		
+			throw new PepperModuleDataException(this,"An error in data was found: Cannot find start/end offset of base data unit '"+BaseDataUnitId+"'.");
 		}		
 	}
 
