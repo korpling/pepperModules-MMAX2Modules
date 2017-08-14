@@ -75,8 +75,7 @@ public class MMAX22SaltMapper extends PepperMapperImpl
 	private Hashtable<String,STextualDS> sTextualDsBaseDataUnitCorrespondance;
 	private Hashtable<SaltExtendedMarkable,SaltExtendedMarkable> claimSContainer;
 	private Hashtable<String,IdentifiableElement> saltIds;
-	private Hashtable<String,Integer> saltIdsCpt;
-
+	
 	/** A mmax2 document **/
 	private SaltExtendedDocument document= null;
 	/** Returns the mmax2 document**/
@@ -121,8 +120,7 @@ public class MMAX22SaltMapper extends PepperMapperImpl
 		this.sTextualDsBaseDataUnitCorrespondance = new Hashtable<String, STextualDS>();
 		this.claimSContainer = new Hashtable<SaltExtendedMarkable, SaltExtendedMarkable>();
 		this.saltIds = new Hashtable<String,IdentifiableElement>();
-		this.saltIdsCpt = new Hashtable<String, Integer>();
-
+		
 		SDocumentGraph sDocumentGraph = sDocument.getDocumentGraph();
 		sDocumentGraph.setName(document.getDocumentId()+"_graph");
 
@@ -1279,24 +1277,5 @@ public class MMAX22SaltMapper extends PepperMapperImpl
 		}
     // if not found return null
     return null;
-	}
-
-	private String getNewSid(String schemeName){
-		Integer currentCptInteger = this.saltIdsCpt.get(schemeName);
-		int currentCpt = 0;
-		if(currentCptInteger != null){
-			currentCpt = currentCptInteger.intValue();
-		}
-
-		String newSId = "";
-		do{
-			currentCpt++;
-			newSId = schemeName+"_"+currentCpt;
-		}
-		while(this.saltIds.containsKey(newSId));
-
-		this.saltIdsCpt.put(schemeName, currentCpt);
-
-		return newSId;
 	}
 }
