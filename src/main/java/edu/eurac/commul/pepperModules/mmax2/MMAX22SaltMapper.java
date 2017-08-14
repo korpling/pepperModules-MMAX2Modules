@@ -400,7 +400,7 @@ public class MMAX22SaltMapper extends PepperMapperImpl
 					if(isMetaMarkable == false){
 						SSpan sSpan = SaltFactory.createSSpan();
 						sSpan.setName(schemeName);
-						sSpan.setId(getNewSid(schemeName));
+						//sSpan.setId(getNewSid(schemeName));
 						
 						sDocumentGraph.addNode(sSpan);
 						registerSNode(markable,sSpan);
