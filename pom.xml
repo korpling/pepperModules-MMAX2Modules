@@ -85,7 +85,7 @@
 						<Bundle-Version>${project.version}</Bundle-Version>
 						<Bundle-RequiredExecutionEnvironment>JavaSE-${java.version}</Bundle-RequiredExecutionEnvironment>
 						<Service-Component>${allServiceComponents}</Service-Component>
-						<Embed-Dependency>mmax2wrapper,commons-lang3</Embed-Dependency>
+						<Embed-Dependency>mmax2wrapper</Embed-Dependency>
 						<Bundle-ClassPath>.,{maven-dependencies} </Bundle-ClassPath>
 						<Include-Resource> {maven-resources}, {maven-dependencies},
 							LICENSE, NOTICE</Include-Resource>
