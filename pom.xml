@@ -32,26 +32,27 @@
 
 	<repositories>
 		<repository>
-			<id>commul-maven-repo-releases</id>
+			<id>commul-maven-depot-releases</id>
 			<releases>
 				<enabled>true</enabled>
 			</releases>
 			<snapshots>
 				<enabled>false</enabled>
 			</snapshots>
-			<url>https://bitbucket.org/commul/maven-repo/raw/releases</url>
+			<url>https://gitlab.inf.unibz.it/commul/maven/maven-repo/-/raw/releases/</url>
 		</repository>
 		<repository>
-			<id>commul-maven-repo-snapshots</id>
+			<id>commul-maven-depot-snapshots</id>
 			<releases>
 				<enabled>false</enabled>
 			</releases>
 			<snapshots>
 				<enabled>true</enabled>
 			</snapshots>
-			<url>https://bitbucket.org/commul/maven-repo/raw/snapshots/</url>
+			<url>https://gitlab.inf.unibz.it/commul/maven/maven-repo/-/raw/snapshots/</url>
 		</repository>
 	</repositories>
+
 	<dependencies>
 		<dependency>
 			<groupId>edu.eurac.commul.annotations.mmax2</groupId>
