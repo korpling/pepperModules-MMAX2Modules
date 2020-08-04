@@ -75,8 +75,7 @@ public class MMAX22SaltMapper extends PepperMapperImpl
 	private Hashtable<String,STextualDS> sTextualDsBaseDataUnitCorrespondance;
 	private Hashtable<SaltExtendedMarkable,SaltExtendedMarkable> claimSContainer;
 	private Hashtable<String,IdentifiableElement> saltIds;
-	private Hashtable<String,Integer> saltIdsCpt;
-
+	
 	/** A mmax2 document **/
 	private SaltExtendedDocument document= null;
 	/** Returns the mmax2 document**/
@@ -121,8 +120,7 @@ public class MMAX22SaltMapper extends PepperMapperImpl
 		this.sTextualDsBaseDataUnitCorrespondance = new Hashtable<String, STextualDS>();
 		this.claimSContainer = new Hashtable<SaltExtendedMarkable, SaltExtendedMarkable>();
 		this.saltIds = new Hashtable<String,IdentifiableElement>();
-		this.saltIdsCpt = new Hashtable<String, Integer>();
-
+		
 		SDocumentGraph sDocumentGraph = sDocument.getDocumentGraph();
 		sDocumentGraph.setName(document.getDocumentId()+"_graph");
 
@@ -400,7 +398,7 @@ public class MMAX22SaltMapper extends PepperMapperImpl
 					if(isMetaMarkable == false){
 						SSpan sSpan = SaltFactory.createSSpan();
 						sSpan.setName(schemeName);
-						sSpan.setId(getNewSid(schemeName));
+						//sSpan.setId(getNewSid(schemeName));
 						
 						sDocumentGraph.addNode(sSpan);
 						registerSNode(markable,sSpan);
@@ -414,14 +412,17 @@ public class MMAX22SaltMapper extends PepperMapperImpl
 						mmaxSLayer.addNode(sSpan);
 
 						for(String baseDataUnitId: baseDateUnitIds){
-							SToken sToken = getSToken(baseDataUnitId, indicesTokens);
-							
-							SSpanningRelation sSpanRel= SaltFactory.createSSpanningRelation();
-							sSpanRel.setSource(sSpan);
-							sSpanRel.setTarget(sToken);
-							
-							sDocumentGraph.addRelation(sSpanRel);
-							mmaxSLayer.addRelation(sSpanRel);
+              // there might be gaps in the otherwise consecutively list of IDs, thus check if the base unit actually exists
+              if(indicesTokens.containsKey(baseDataUnitId)) {
+                SToken sToken = getSToken(baseDataUnitId, indicesTokens);
+
+                SSpanningRelation sSpanRel= SaltFactory.createSSpanningRelation();
+                sSpanRel.setSource(sSpan);
+                sSpanRel.setTarget(sToken);
+
+                sDocumentGraph.addRelation(sSpanRel);
+                mmaxSLayer.addRelation(sSpanRel);
+              }
 						}
 					}else{
 						for(MarkableAttribute markableAttribute: markable.getAttributes()){
@@ -477,20 +478,27 @@ public class MMAX22SaltMapper extends PepperMapperImpl
 							}
 
 							for(int i = 0; i< markablePointerValues.length; i++){
-								SPointingRelation sPointingRelation = SaltFactory.createSPointingRelation();
-								sPointingRelation.setName(markableAttribute.getName());
-								sDocumentGraph.addRelation(sPointingRelation);
-								sPointingRelation.setType(markableAttribute.getName());
-								sPointingRelation.setSource(sSpan);
 
-								SaltExtendedMarkable targetMarkable = getMarkable(markablePointerValues[i], factory.getTargetSchemeName());
-								if(targetMarkable == null)
-									throw new PepperModuleDataException(this, "An unknown markable of id '"+markablePointerValues[i]+"' belonging to scheme '"+factory.getTargetSchemeName()
-											+"' is referenced as the target of the pointer '"+markableAttribute.getName()+"' within markable '"+markable+"'");
-								SNode sTarget = getSNode(targetMarkable);
-								sPointingRelation.setTarget((SStructuredNode)sTarget);
-								mmaxSLayer.addRelation(sPointingRelation);
-								sPointingRelation.getLayers().add(mmaxSLayer);
+								if (!"empty".equals(markablePointerValues[i])) {
+
+									SPointingRelation sPointingRelation = SaltFactory.createSPointingRelation();
+									sPointingRelation.setName(markableAttribute.getName());
+									sPointingRelation.setType(markableAttribute.getName());
+									sPointingRelation.setSource(sSpan);
+
+									SaltExtendedMarkable targetMarkable = getMarkable(markablePointerValues[i], factory.getTargetSchemeName());
+									if (targetMarkable == null) {
+										throw new PepperModuleDataException(this, "An unknown markable of id '" + markablePointerValues[i] + "' belonging to scheme '" + factory.getTargetSchemeName()
+											+ "' is referenced as the target of the pointer '" + markableAttribute.getName() + "' within markable '" + markable + "'");
+									}
+									SNode sTarget = getSNode(targetMarkable);
+									sPointingRelation.setTarget((SStructuredNode) sTarget);
+
+									sDocumentGraph.addRelation(sPointingRelation);
+									if (mmaxSLayer != null) {
+										mmaxSLayer.addRelation(sPointingRelation);
+									}
+								}
 							}
 						}else{
 							throw new PepperModuleException("Developper error: unknown type of markable attribute '"+attributeType+"'...");
@@ -1153,18 +1161,15 @@ public class MMAX22SaltMapper extends PepperMapperImpl
 	// some usefuls methods
 
 	private int[] getStartAndEnd (String BaseDataUnitId, Hashtable<String,int[]> indicesTokens){
-		if ((indicesTokens.containsKey(BaseDataUnitId))&&  (indicesTokens.containsKey(BaseDataUnitId))){
+		if ((indicesTokens.containsKey(BaseDataUnitId))){
 			Integer start= indicesTokens.get(BaseDataUnitId)[0];
 			Integer end= indicesTokens.get(BaseDataUnitId)[1];
 			int[] result = {start, end};
 			return(result);
 		}
 		else{
-			if (!indicesTokens.containsKey(BaseDataUnitId))
-				throw new PepperModuleDataException(this,"An error in data was found: Cannot find start offset of base data unit '"+BaseDataUnitId+"'.");
-			if (!indicesTokens.containsKey(BaseDataUnitId))
-				throw new PepperModuleDataException(this,"An error in data was found: Cannot find end offset of base data unit '"+BaseDataUnitId+"'.");
-			return(null);
+		
+			throw new PepperModuleDataException(this,"An error in data was found: Cannot find start/end offset of base data unit '"+BaseDataUnitId+"'.");
 		}		
 	}
 
@@ -1259,29 +1264,18 @@ public class MMAX22SaltMapper extends PepperMapperImpl
 	}
 
 	private SaltExtendedMarkable getMarkable(String markableId, String schemeName){
-		if(!this.saltExtendedMarkableHash.containsKey(schemeName)){
-			return null;
-		}else{
+    if(schemeName == null || schemeName.isEmpty()) {
+      // search in all possible target domains
+      for(Hashtable<String,SaltExtendedMarkable> markablesForDomain : this.saltExtendedMarkableHash.values()) {
+        SaltExtendedMarkable result = markablesForDomain.get(markableId);
+        if(result != null) {
+          return result;
+        }
+      }
+    } else if (this.saltExtendedMarkableHash.containsKey(schemeName)) {
 			return this.saltExtendedMarkableHash.get(schemeName).get(markableId);
 		}
-	}
-
-	private String getNewSid(String schemeName){
-		Integer currentCptInteger = this.saltIdsCpt.get(schemeName);
-		int currentCpt = 0;
-		if(currentCptInteger != null){
-			currentCpt = currentCptInteger.intValue();
-		}
-
-		String newSId = "";
-		do{
-			currentCpt++;
-			newSId = schemeName+"_"+currentCpt;
-		}
-		while(this.saltIds.containsKey(newSId));
-
-		this.saltIdsCpt.put(schemeName, currentCpt);
-
-		return newSId;
+    // if not found return null
+    return null;
 	}
 }
