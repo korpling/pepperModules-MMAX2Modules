@@ -59,6 +59,7 @@
 			<artifactId>mmax2wrapper</artifactId>
 			<version>1.0</version>
 			<type>jar</type>
+			<scope>provided</scope>
 		</dependency>
 	</dependencies>
 	<build>
